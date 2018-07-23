@@ -1,0 +1,27 @@
+{
+    "mySql": 
+    {
+        "host": "localhost",
+        "user": "root",
+        "port": "3306",
+        "password": "root",
+        "database": "contact"
+    },    
+    "vidal":
+    {
+        "ruleBaseUrl": "http://dev-vidal-memo.vidal.fr",
+        "rule": "/api/memo-rules/rules",
+        "baseUrl": "http://api.vidal.fr",
+        "domain": "/rest/api",
+        "app_id": "dbd540aa",
+        "app_key": "8343650ea233a4716f524ab77dc24948"
+    },
+    "common":
+    {
+        "port": 3000,
+        "elasticUrl": "http://localhost:9200",
+        "elasticIndex": "rule",
+        "logFileName": "rule.log",
+        "logToConsole": true
+    }
+}
