@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const databaseObject_1 = require("./databaseObject");
 const databaseObject_2 = require("./databaseObject");
 const myToolbox_1 = require("./myToolbox");
+const util_1 = require("util");
 class BaseApi {
     constructor(app, connexion, requiresToken = false) {
         this.app = app;
@@ -13,17 +14,22 @@ class BaseApi {
     errorMessage(text) {
         return { "status": "ERR", "message": text };
     }
-    respond(response, statusCode, data, contentType = 'application/json') {
+    respond(response, statusCode, data = null) {
         response.status(statusCode);
-        response.setHeader('content-type', contentType);
+        if (util_1.isObject(data)) {
+            response.setHeader('content-type', 'application/json');
+        }
+        else {
+            response.setHeader('content-type', 'test/plain');
+        }
         response.send(JSON.stringify(data));
     }
 }
 exports.BaseApi = BaseApi;
 class RecordsetApi extends BaseApi {
     assignObject() {
-        this.app.get('/', function (request, response) {
-            response.send('API Authentification is running');
+        this.app.get('/recordset', (request, response) => {
+            this.respond(response, 200, 'API recordset is running');
         });
         let multer = require('multer');
         let upload = multer();
@@ -39,19 +45,18 @@ class RecordsetApi extends BaseApi {
             queryAttributes.groupby = request.body.groupby;
             queryAttributes.extra = request.body.extra;
             let token = request.body.token;
-            let callback = function (err, data) {
+            let callback = (err, data) => {
                 if (err) {
-                    response.send(JSON.stringify(err));
+                    this.respond(response, 500, err);
                 }
                 else {
-                    response.setHeader('content-type', 'application/json');
-                    response.send(JSON.stringify(data));
+                    this.respond(response, 200, data);
                 }
             };
             if (this.requiresToken) {
                 let authent = this.connexion.checkJwt(token);
                 if (!authent.decoded) {
-                    response.send(this.errorMessage("Token is absent or invalid"));
+                    this.respond(response, 403, 'Token is absent or invalid');
                     return;
                 }
             }
@@ -62,38 +67,37 @@ class RecordsetApi extends BaseApi {
 }
 exports.RecordsetApi = RecordsetApi;
 class TableApi extends BaseApi {
-    assign(tableName, idFieldName, fields = null) {
-        this.assignObject(tableName, idFieldName, fields);
+    assign() {
+        this.assignObject();
     }
-    assignObject(tableName, idFieldName = null, fields = null) {
-        this.myToolbox.logg(tableName + " ==> API launched");
-        this.app.get('/', function (request, response) {
-            response.send('API to ' + tableName + ' is running');
+    assignObject() {
+        this.myToolbox.log("API to table ==> API launched");
+        this.app.get('/table', (request, response) => {
+            this.respond(response, 200, 'API table is running');
         });
         let multer = require('multer');
         let upload = multer();
         // Lists all records of the table
-        this.app.post('/' + tableName + 's', upload.array(), (request, response) => {
+        this.app.post('/table', upload.array(), (request, response) => {
             let queryAttributes = new databaseObject_2.QueryAttribute();
-            queryAttributes.from = tableName;
+            queryAttributes.from = request.body.tableName;
             queryAttributes.select = "*";
             queryAttributes.where = request.body.where;
             queryAttributes.limit = request.body.limit;
             queryAttributes.offset = request.body.offset;
             let token = request.body.token;
-            let callback = function (err, data) {
+            let callback = (err, data) => {
                 if (err) {
-                    response.send(JSON.stringify(err));
+                    this.respond(response, 500, err);
                 }
                 else {
-                    response.setHeader('content-type', 'application/json');
-                    response.send(JSON.stringify(data));
+                    this.respond(response, 200, data);
                 }
             };
             if (this.requiresToken) {
                 let authent = this.connexion.checkJwt(token);
                 if (!authent.decoded) {
-                    response.send(this.errorMessage("Token is absent or invalid"));
+                    this.respond(response, 403, 'Token is absent or invalid');
                     return;
                 }
             }
@@ -101,40 +105,39 @@ class TableApi extends BaseApi {
             table.load(callback);
         });
         // Saves an objects
-        this.app.put('/' + tableName, upload.array(), (request, response) => {
+        this.app.put('/table', upload.array(), (request, response) => {
             let token = request.body.token;
             let object = request.body.object;
             let queryAttributes = new databaseObject_2.QueryAttribute();
-            queryAttributes.from = tableName;
+            queryAttributes.from = request.body.tableName;
             queryAttributes.select = "*";
-            queryAttributes.idFieldName = request.body.idFieldName.toString();
+            queryAttributes.idFieldName = request.body.idFieldName ? request.body.idFieldName.toString() : null;
             let callback = (err, data) => {
                 if (err) {
-                    response.send(JSON.stringify(this.errorMessage(err)));
+                    this.respond(response, 500, err);
                 }
                 else {
-                    response.setHeader('content-type', 'application/json');
-                    response.send(JSON.stringify(data));
+                    this.respond(response, 200, data);
                 }
             };
             if (!object) {
-                response.send(this.errorMessage('Please define a ' + tableName + '"object":{...}'));
+                this.respond(response, 400, "Please define a table like object:{...}");
                 return;
             }
             if (!queryAttributes.idFieldName) {
-                response.send(this.errorMessage('Please define an "idFieldName": "xxx" in you request body'));
+                this.respond(response, 400, "Please define an idFieldName in you request body");
                 return;
             }
             if (this.requiresToken) {
                 let authent = this.connexion.checkJwt(token);
                 if (!authent.decoded) {
-                    response.send(this.errorMessage("Token is absent or invalid"));
+                    this.respond(response, 403, 'Token is absent or invalid');
                     return;
                 }
                 else {
                     if (object[queryAttributes.idFieldName]) {
                         if (authent.decoded[queryAttributes.idFieldName] != object[queryAttributes.idFieldName]) {
-                            response.send(this.errorMessage("You can update only your self (id in obejct identical to id of token)"));
+                            this.respond(response, 403, "You can update only your self (id in object identical to id of token)");
                             return;
                         }
                     }
@@ -144,24 +147,23 @@ class TableApi extends BaseApi {
             table.save(callback, object);
         });
         // Gets an empty record
-        this.app.post('/' + tableName + '/fresh', upload.array(), (request, response) => {
+        this.app.post('/table/fresh', upload.array(), (request, response) => {
             let token = request.body.token;
             let queryAttributes = new databaseObject_2.QueryAttribute();
-            queryAttributes.from = tableName;
+            queryAttributes.from = request.body.tableName;
             queryAttributes.select = "*";
             let callback = (err, data) => {
                 if (err) {
-                    response.send(JSON.stringify(this.errorMessage(err)));
+                    this.respond(response, 500, err);
                 }
                 else {
-                    response.setHeader('content-type', 'application/json');
-                    response.send(JSON.stringify(data));
+                    this.respond(response, 200, data);
                 }
             };
             if (this.requiresToken) {
                 let authent = this.connexion.checkJwt(token);
                 if (!authent.decoded) {
-                    response.send(this.errorMessage("Token is absent or invalid"));
+                    this.respond(response, 403, 'Token is absent or invalid');
                     return;
                 }
             }
@@ -169,36 +171,35 @@ class TableApi extends BaseApi {
             table.fresh(callback);
         });
         // Deletes some records
-        this.app.delete('/' + tableName, upload.array(), (request, response) => {
+        this.app.delete('/table', upload.array(), (request, response) => {
             let token = request.body.token;
             let where = request.body.where;
             let queryAttributes = new databaseObject_2.QueryAttribute();
-            queryAttributes.from = tableName;
+            queryAttributes.from = request.body.tableName;
             queryAttributes.select = "*";
             let callback = (err, data) => {
                 if (err) {
-                    response.send(JSON.stringify(this.errorMessage(err)));
+                    this.respond(response, 500, err);
                 }
                 else {
-                    response.setHeader('content-type', 'application/json');
-                    response.send(JSON.stringify(data));
+                    this.respond(response, 200, data);
                 }
             };
             if (this.requiresToken) {
                 let authent = this.connexion.checkJwt(token);
                 if (!authent.decoded) {
-                    response.send(this.errorMessage("Token is absent or invalid"));
+                    this.respond(response, 403, 'Token is absent or invalid');
                     return;
                 }
-                else {
-                    if (authent.decoded.type != 1) {
-                        response.send(this.errorMessage("This function is for administrators only"));
-                        return;
-                    }
-                }
+                // } else {
+                //     if (authent.decoded.type != 1) {
+                //         this.respond(response, 403, "This function is for administrators only");
+                //         return;
+                //     }
+                // }
             }
             if (!where) {
-                response.send(this.errorMessage('Please define a where to set all records to delete'));
+                this.respond(response, 400, "Please define a where to set all records to delete");
                 return;
             }
             let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);

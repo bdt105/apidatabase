@@ -7,7 +7,7 @@ const index_1 = require("./index");
 let app = express();
 // For POST-Support
 let toolbox = new dist_2.Toolbox();
-let configuration = toolbox.loadFromJsonFile("./conf/configuration.json");
+let configuration = toolbox.loadFromJsonFile("configuration.json");
 let bodyParser = require('body-parser');
 let multer = require('multer');
 let upload = multer();
@@ -24,6 +24,7 @@ app.use(function (req, res, next) {
 let conn = new dist_1.Connexion(configuration.mySql, configuration.authentification);
 conn.tryConnectSql();
 // Contact Header
-new index_1.TableApi(app, conn, false).assign("contactheader", "idcontactheader");
+new index_1.TableApi(app, conn, true).assign();
+new index_1.RecordsetApi(app, conn, true).assignObject();
 app.listen(port);
 //# sourceMappingURL=server.js.map

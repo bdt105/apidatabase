@@ -2,14 +2,13 @@ import express = require('express');
 
 import { Connexion, MySqlConfiguration } from "bdt105connexion/dist";
 import { Toolbox } from "bdt105toolbox/dist";
-import { MyToolbox } from "./myToolbox";
 import { RecordsetApi, TableApi } from './index';
 
 let app = express();
 
 // For POST-Support
 let toolbox = new Toolbox();
-let configuration = toolbox.loadFromJsonFile("./conf/configuration.json");
+let configuration = toolbox.loadFromJsonFile("configuration.json");
 
 let bodyParser = require('body-parser');
 let multer = require('multer');
@@ -32,6 +31,7 @@ let conn = new Connexion(configuration.mySql, configuration.authentification);
 conn.tryConnectSql();
 
 // Contact Header
-new TableApi(app, conn, false).assign("contactheader", "idcontactheader");
+new TableApi(app, conn, true).assign();
+new RecordsetApi(app, conn, true).assignObject();
 
 app.listen(port);

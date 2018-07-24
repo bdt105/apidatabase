@@ -10,12 +10,12 @@ export declare class BaseApi {
         "status": string;
         "message": string;
     };
-    protected respond(response: any, statusCode: number, data: any, contentType?: string): void;
+    protected respond(response: any, statusCode: number, data?: any): void;
 }
 export declare class RecordsetApi extends BaseApi {
     assignObject(): void;
 }
 export declare class TableApi extends BaseApi {
-    assign(tableName: string, idFieldName: string, fields?: any): void;
-    protected assignObject(tableName: string, idFieldName?: string, fields?: any): void;
+    assign(): void;
+    protected assignObject(): void;
 }
