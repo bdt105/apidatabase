@@ -46,6 +46,7 @@ export class RecordsetApi extends BaseApi {
         // Lists all records of the table
         this.app.post('/query', upload.array(), (request: any, response: any) => {
             let queryAttributes = new QueryAttribute();
+            let sql = request.body.sql;
             queryAttributes.from = request.body.from;
             queryAttributes.select = request.body.select;
             queryAttributes.where = request.body.where;
@@ -74,7 +75,11 @@ export class RecordsetApi extends BaseApi {
 
             let recordset = new DatabaseRecordset(this.connexion, queryAttributes);
 
-            recordset.load(callback);
+            if (sql) {
+                recordset.sql(callback, sql);
+            } else {
+                recordset.load(callback);
+            }
         });
     }
 }
@@ -158,14 +163,14 @@ export class TableApi extends BaseApi {
                     this.respond(response, 403, 'Token is absent or invalid');
                     return;
                 }
-                else {
-                    if (object[queryAttributes.idFieldName]) { // That's an update
-                        if (authent.decoded[queryAttributes.idFieldName] != object[queryAttributes.idFieldName]) {
-                            this.respond(response, 403, "You can update only your self (id in object identical to id of token)");
-                            return;
-                        }
-                    }
-                }
+                // else {
+                //     if (object[queryAttributes.idFieldName]) { // That's an update
+                //         if (authent.decoded[queryAttributes.idFieldName] != object[queryAttributes.idFieldName]) {
+                //             this.respond(response, 403, "You can update only your self (id in object identical to id of token)");
+                //             return;
+                //         }
+                //     }
+                // }
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);

@@ -36,6 +36,7 @@ class RecordsetApi extends BaseApi {
         // Lists all records of the table
         this.app.post('/query', upload.array(), (request, response) => {
             let queryAttributes = new databaseObject_2.QueryAttribute();
+            let sql = request.body.sql;
             queryAttributes.from = request.body.from;
             queryAttributes.select = request.body.select;
             queryAttributes.where = request.body.where;
@@ -61,7 +62,12 @@ class RecordsetApi extends BaseApi {
                 }
             }
             let recordset = new databaseObject_1.DatabaseRecordset(this.connexion, queryAttributes);
-            recordset.load(callback);
+            if (sql) {
+                recordset.sql(callback, sql);
+            }
+            else {
+                recordset.load(callback);
+            }
         });
     }
 }
@@ -134,14 +140,14 @@ class TableApi extends BaseApi {
                     this.respond(response, 403, 'Token is absent or invalid');
                     return;
                 }
-                else {
-                    if (object[queryAttributes.idFieldName]) {
-                        if (authent.decoded[queryAttributes.idFieldName] != object[queryAttributes.idFieldName]) {
-                            this.respond(response, 403, "You can update only your self (id in object identical to id of token)");
-                            return;
-                        }
-                    }
-                }
+                // else {
+                //     if (object[queryAttributes.idFieldName]) { // That's an update
+                //         if (authent.decoded[queryAttributes.idFieldName] != object[queryAttributes.idFieldName]) {
+                //             this.respond(response, 403, "You can update only your self (id in object identical to id of token)");
+                //             return;
+                //         }
+                //     }
+                // }
             }
             let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
             table.save(callback, object);
