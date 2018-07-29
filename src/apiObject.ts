@@ -37,8 +37,11 @@ export class RecordsetApi extends BaseApi {
 
     assignObject() {
 
-        this.app.get('/recordset', (request: any, response: any) => {
-            this.respond(response, 200, 'API recordset is running');
+        this.app.get('/', (request: any, response: any) => {
+            this.respond(response, 200, 'API database is running');
+        });
+        this.app.get('/query', (request: any, response: any) => {
+            this.respond(response, 200, 'API query is running');
         });
         let multer = require('multer');
         let upload = multer();
