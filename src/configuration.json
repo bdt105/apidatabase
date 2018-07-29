@@ -9,7 +9,7 @@
     },
     "common":
     {
-        "port": 3000,
+        "port": 3100,
         "elasticUrl": "http://localhost:9200",
         "elasticIndex": "rule",
         "logFileName": "rule.log",
