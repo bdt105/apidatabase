@@ -27,4 +27,4 @@ conn.tryConnectSql();
 new index_1.TableApi(app, conn, true).assign();
 new index_1.RecordsetApi(app, conn, true).assignObject();
 app.listen(port);
-//# sourceMappingURL=server.js.map
+//# sourceMappingURL=serverApiDatabase.js.map
