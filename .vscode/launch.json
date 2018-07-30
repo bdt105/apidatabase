@@ -14,8 +14,8 @@
             "type": "node",
             "request": "launch",
             "name": "Lancer le programme",
-            "program": "${workspaceRoot}/dist/server.js",
-            "cwd": "${workspaceRoot}/dist/",
+            "program": "${workspaceRoot}/build/serverApiDatabase.js",
+            "cwd": "${workspaceRoot}/build/",
             "sourceMaps": true,
             "outFiles": [
                 "${workspaceRoot}/dist/**/*.js"

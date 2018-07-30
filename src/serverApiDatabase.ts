@@ -11,9 +11,14 @@ let toolbox = new Toolbox();
 let configuration = toolbox.loadFromJsonFile("configuration.json");
 
 let bodyParser = require('body-parser');
-let multer = require('multer');
-let upload = multer();
 let port = configuration.common.port;
+
+process.on('uncaughtException', function (err) {
+    console.error(err);
+    console.error("Node NOT Exiting...");
+    console.log(err);
+    console.log("Node NOT Exiting...");
+});
 
 app.use(bodyParser());
 
@@ -35,3 +40,4 @@ new TableApi(app, conn, true).assign();
 new RecordsetApi(app, conn, true).assignObject();
 
 app.listen(port);
+toolbox.log("Listening on port " + port);

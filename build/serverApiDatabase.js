@@ -9,9 +9,13 @@ let app = express();
 let toolbox = new dist_2.Toolbox();
 let configuration = toolbox.loadFromJsonFile("configuration.json");
 let bodyParser = require('body-parser');
-let multer = require('multer');
-let upload = multer();
 let port = configuration.common.port;
+process.on('uncaughtException', function (err) {
+    console.error(err);
+    console.error("Node NOT Exiting...");
+    console.log(err);
+    console.log("Node NOT Exiting...");
+});
 app.use(bodyParser());
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*'); // Website you wish to allow to connect
@@ -27,4 +31,5 @@ conn.tryConnectSql();
 new index_1.TableApi(app, conn, true).assign();
 new index_1.RecordsetApi(app, conn, true).assignObject();
 app.listen(port);
+toolbox.log("Listening on port " + port);
 //# sourceMappingURL=serverApiDatabase.js.map
