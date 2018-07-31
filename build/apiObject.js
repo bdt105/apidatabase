@@ -94,6 +94,7 @@ class TableApi extends BaseApi {
             queryAttributes.where = request.body.where;
             queryAttributes.limit = request.body.limit;
             queryAttributes.offset = request.body.offset;
+            queryAttributes.orderby = request.body.orderby;
             let token = request.body.token;
             let callback = (err, data) => {
                 if (err) {
