@@ -11,11 +11,14 @@ export class BaseApi {
 
     protected myToolbox: MyToolbox;
 
+    protected moment: any;
+
     constructor(app: any, connexion: Connexion, requiresToken: boolean = false) {
         this.app = app;
         this.connexion = connexion;
         this.requiresToken = requiresToken;
         this.myToolbox = new MyToolbox();
+        this.moment = require('moment');
     }
 
     protected errorMessage(text: string) {
@@ -29,7 +32,12 @@ export class BaseApi {
         } else {
             response.setHeader('content-type', 'test/plain');
         }
-        response.send(JSON.stringify(data));
+
+        Date.prototype.toJSON = function () {
+            return this.toLocaleString();
+        }
+        let temp = JSON.stringify(data);
+        response.send(temp);
     }
 }
 
@@ -167,14 +175,7 @@ export class TableApi extends BaseApi {
                     this.respond(response, 403, 'Token is absent or invalid');
                     return;
                 }
-                // else {
-                //     if (object[queryAttributes.idFieldName]) { // That's an update
-                //         if (authent.decoded[queryAttributes.idFieldName] != object[queryAttributes.idFieldName]) {
-                //             this.respond(response, 403, "You can update only your self (id in object identical to id of token)");
-                //             return;
-                //         }
-                //     }
-                // }
+
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
