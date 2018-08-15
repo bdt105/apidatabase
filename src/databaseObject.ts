@@ -1,9 +1,8 @@
-import { isObject } from 'util';
 import { Connexion } from "bdt105connexion/dist";
 import { Toolbox } from "bdt105toolbox/dist";
 
 /** Class representing a field value. */
-export class FieldValue{
+export class FieldValue {
     public fieldName: string;
     public value: string;
     public comparisonOperator: string;
@@ -14,8 +13,8 @@ export class FieldValue{
 export class DatabaseObject {
     protected connexion: Connexion;
     protected toolbox: Toolbox;
-    
-    constructor(connexion: Connexion){
+
+    constructor(connexion: Connexion) {
         this.connexion = connexion;
         this.toolbox = new Toolbox();
     }
@@ -27,13 +26,19 @@ export class DatabaseObject {
      * @param {string} sql - Sql query
      * @return {void}
      */
-    protected query(callback: Function, sql: string){
-        if (this.connexion){
+    protected queryOld(callback: Function, sql: string) {
+        if (this.connexion) {
             this.connexion.querySql(
                 (err: any, rows: any) => callback(err, rows), sql);
         }
-    } 
-    
+    }
+    protected query(callback: Function, sql: string) {
+        if (this.connexion) {
+            this.connexion.queryPool(
+                (err: any, rows: any) => callback(err, rows), sql);
+        }
+    }
+
     /**
      * Retrieve a sql sentence refering to a 'where' by concataining fields and logic operators
      * Calls 
@@ -42,21 +47,21 @@ export class DatabaseObject {
      * @param {string} defaultComparisonOperator - Comparison operator
      * @return {string} - 'where' sentence
      */
-    protected getWhereString(fieldValues: FieldValue[], defaultLogicOperator = "AND", defaultComparisonOperator = "="): string{
+    protected getWhereString(fieldValues: FieldValue[], defaultLogicOperator = "AND", defaultComparisonOperator = "="): string {
         var ret = "";
-        if (fieldValues){
-            for (var i = 0; i < fieldValues.length; i ++){
-                ret += (ret != "" ? (fieldValues[i].logicOperator ? " " + fieldValues[i].logicOperator + " " : " " + defaultLogicOperator + " ") : "") + 
+        if (fieldValues) {
+            for (var i = 0; i < fieldValues.length; i++) {
+                ret += (ret != "" ? (fieldValues[i].logicOperator ? " " + fieldValues[i].logicOperator + " " : " " + defaultLogicOperator + " ") : "") +
                     fieldValues[i].fieldName + (fieldValues[i].comparisonOperator ? fieldValues[i].comparisonOperator : "=") + "'" + fieldValues[i].value + "'";
             }
         }
         return ret;
     }
-    
-    fieldsToString(tableName: string, fields: any[], alias = true){
+
+    fieldsToString(tableName: string, fields: any[], alias = true) {
         var ret = "";
-        for (var i = 0; i < fields.length; i++){
-            ret += (ret == "" ? "" : ", ") + (alias ? tableName + "." : "") + fields[i] + (alias ? " " + tableName + "_" + fields[i]: "");
+        for (var i = 0; i < fields.length; i++) {
+            ret += (ret == "" ? "" : ", ") + (alias ? tableName + "." : "") + fields[i] + (alias ? " " + tableName + "_" + fields[i] : "");
         }
         return ret;
     }
@@ -85,8 +90,8 @@ export class DatabaseRecordset extends DatabaseObject {
      * @param {Connexion} - Connexion to mySql bdt105connexion object
      * @param {QueryAttribute} - Content of the sql query QueryAttribute object
      * @return {void}
-     */    
-    constructor(connexion: Connexion, attributes: QueryAttribute = null){
+     */
+    constructor(connexion: Connexion, attributes: QueryAttribute = null) {
         super(connexion);
         this.attributes = attributes;
     }
@@ -94,29 +99,29 @@ export class DatabaseRecordset extends DatabaseObject {
     /**
      * Retrieves a sql phrase in order to use where, groupby,; orderby limit and offset sql paramaters
      * @return {string} - End of sql sentence
-     */    
-    protected getSqlend(){
-        let sqlEnd = (this.attributes.where ? " WHERE " + this.attributes.where : '') + 
-        (this.attributes.groupby ? " GROUP BY " + this.attributes.groupby : "") +
-        (this.attributes.orderby ? " ORDER BY " + this.attributes.orderby : "") + 
-        (this.attributes.limit ? " LIMIT " + this.attributes.limit : "") + 
-        (this.attributes.offset ? " OFFSET " + this.attributes.offset : "");
+     */
+    protected getSqlend() {
+        let sqlEnd = (this.attributes.where ? " WHERE " + this.attributes.where : '') +
+            (this.attributes.groupby ? " GROUP BY " + this.attributes.groupby : "") +
+            (this.attributes.orderby ? " ORDER BY " + this.attributes.orderby : "") +
+            (this.attributes.limit ? " LIMIT " + this.attributes.limit : "") +
+            (this.attributes.offset ? " OFFSET " + this.attributes.offset : "");
         return sqlEnd;
-    }    
+    }
 
     /**
      * Retrieves a sql phrase with all paramters
      * @return {string} - Sql sentence
-     */    
-    protected getSql (){
+     */
+    protected getSql() {
         return "SELECT " + this.attributes.select + " FROM " + this.attributes.from + (this.attributes.extra ? " " + this.attributes.extra : "") + this.getSqlend();
     }
 
-    protected whereString (fieldValues: FieldValue[], defaultLogicoperator = "AND", defaultComparisonOperator = "="): string{
+    protected whereString(fieldValues: FieldValue[], defaultLogicoperator = "AND", defaultComparisonOperator = "="): string {
         var ret = "";
-        if (fieldValues){
-            for (var i = 0; i < fieldValues.length; i ++){
-                ret += (ret != "" ? (fieldValues[i].logicOperator ? " " + fieldValues[i].logicOperator + " " : " AND ") : "") + 
+        if (fieldValues) {
+            for (var i = 0; i < fieldValues.length; i++) {
+                ret += (ret != "" ? (fieldValues[i].logicOperator ? " " + fieldValues[i].logicOperator + " " : " AND ") : "") +
                     fieldValues[i].fieldName + (fieldValues[i].comparisonOperator ? fieldValues[i].comparisonOperator : "=") + "'" + fieldValues[i].value + "'";
             }
         }
@@ -127,8 +132,8 @@ export class DatabaseRecordset extends DatabaseObject {
      * Queries the recordset an popultates the result
      * @param {Function} - Callback function to cal when work is done
      * @return {void}
-     */    
-    load (callback: Function){
+     */
+    load(callback: Function) {
         this.query((err: any, rows: any) => callback(err, rows), this.getSql());
     }
 
@@ -137,8 +142,8 @@ export class DatabaseRecordset extends DatabaseObject {
      * @param {Function} - Callback function to cal when work is done
      * @param {string} - Sql string
      * @return {void}
-     */    
-    sql (callback: Function, sql: string){
+     */
+    sql(callback: Function, sql: string) {
         this.query((err: any, rows: any) => callback(err, rows), sql);
     }
 }
@@ -146,12 +151,12 @@ export class DatabaseRecordset extends DatabaseObject {
 /** Class to get a table, allows crud functions */
 export class DatabaseTable extends DatabaseRecordset {
 
-    private callbackSearch (err: any, rows: any, prefix: string, operator: string, q: string, callback: Function){
+    private callbackSearch(err: any, rows: any, prefix: string, operator: string, q: string, callback: Function) {
         let searchString = "";
-        for (var i = 0 ; i < rows.length; i++){
+        for (var i = 0; i < rows.length; i++) {
             searchString += (searchString == "" ? "" : " " + operator + " ") + rows[i].Field + prefix.replace("[]", q);
         }
-        if (callback){
+        if (callback) {
             this.attributes.where = searchString;
             this.query((err: any, rows: any) => callback(err, rows), this.getSql());
         }
@@ -162,10 +167,10 @@ export class DatabaseTable extends DatabaseRecordset {
      * @param {Function} - Callback function
      * @param {string} - Id to search for
      * @return {void}
-     */    
-    loadFromId(callback: Function, id: string){
+     */
+    loadFromId(callback: Function, id: string) {
         this.attributes.where = this.attributes.idFieldName + "='" + id + "'";
-        this.query((err: any, rows: any) => callback(err, rows), this.getSql()); 
+        this.query((err: any, rows: any) => callback(err, rows), this.getSql());
     }
 
     /**
@@ -173,10 +178,10 @@ export class DatabaseTable extends DatabaseRecordset {
      * @param {Function} - Callback function
      * @param {string} - where condition
      * @return {void}
-     */    
-    loadFromWhere(callback: Function, where: string){
+     */
+    loadFromWhere(callback: Function, where: string) {
         this.attributes.where = where;
-        this.query((err: any, rows: any) => callback(err, rows), this.getSql()); 
+        this.query((err: any, rows: any) => callback(err, rows), this.getSql());
     }
 
     /**
@@ -186,16 +191,16 @@ export class DatabaseTable extends DatabaseRecordset {
      * @param {string} prefix - prefix of the condition for each field
      * @param {string} suffix - suffix of the condition for each field
      * @return {void}
-     */    
-    search (callback: Function, q: string, prefix: string, suffix: string){
-        if (q){
+     */
+    search(callback: Function, q: string, prefix: string, suffix: string) {
+        if (q) {
             this.query((err: any, rows: any) => this.callbackSearch(err, rows, prefix, suffix, q, callback), "SHOW FIELDS FROM " + this.attributes.from);
-        }else{
+        } else {
             this.query((err: any, rows: any) => callback(err, rows), this.getSql());
         }
     }
 
-    private insertString (body: any){
+    private insertString(body: any) {
         let values = "";
         let fields = "";
         for (var name in body) {
@@ -211,8 +216,8 @@ export class DatabaseTable extends DatabaseRecordset {
      * @param {Function} callback - Callback function
      * @param {any} body - object to insert, propertie must match table fields
      * @return {void}
-     */    
-    insert (callback: Function, body: any){
+     */
+    insert(callback: Function, body: any) {
         let sql = "INSERT INTO " + this.attributes.from + this.insertString(body);
         this.query((err: any, rows: any) => callback(err, rows), sql);
     }
@@ -223,8 +228,8 @@ export class DatabaseTable extends DatabaseRecordset {
      * @param {any} fieldName - Name of the field
      * @param {any} value - Value of the field
      * @return {void}
-     */    
-    deleteFromField (callback: Function, fieldName: string, value: string){
+     */
+    deleteFromField(callback: Function, fieldName: string, value: string) {
         let where = fieldName + "='" + value + "'";
         this.deleteFromWhere((err: any, rows: any) => callback(err, rows), where);
     }
@@ -234,8 +239,8 @@ export class DatabaseTable extends DatabaseRecordset {
      * @param {Function} callback - Callback function
      * @param {string} value - Value of the id
      * @return {void}
-     */    
-    deleteFromId (callback: Function, value: string){
+     */
+    deleteFromId(callback: Function, value: string) {
         let where = this.attributes.idFieldName + "='" + value + "'";
         this.deleteFromWhere((err: any, rows: any) => callback(err, rows), where);
     }
@@ -245,16 +250,16 @@ export class DatabaseTable extends DatabaseRecordset {
      * @param {Function} callback - Callback function
      * @param {string} where - Condition
      * @return {void}
-     */    
-    deleteFromWhere (callback: Function, where: string){
+     */
+    deleteFromWhere(callback: Function, where: string) {
         let sql = "DELETE FROM " + this.attributes.from + " WHERE " + where;
         this.query((err: any, rows: any) => callback(err, rows), sql);
     }
 
-    private updateString(body: any){
+    private updateString(body: any) {
         let st = "";
         let update = false;
-        
+
         for (var name in body) {
             st += (st == "" ? "" : ", ") + (body[name] === null ? name + "=null" : name + "='" + body[name] + "'");
         }
@@ -268,17 +273,17 @@ export class DatabaseTable extends DatabaseRecordset {
      * @param {any} body - Object to update
      * @param {string} where - Condition
      * @return {void}
-     */    
-    update (callback: Function, body: any, where: string){
+     */
+    update(callback: Function, body: any, where: string) {
         let sql = "UPDATE " + this.attributes.from + " SET " + this.updateString(body) + " WHERE " + where;
         this.query((err: any, rows: any) => callback(err, rows), sql);
     }
 
-    private callbackUnique(callback: Function, body: any, id: string, err: any, rows: any){
-        if (rows && rows.length > 0){
+    private callbackUnique(callback: Function, body: any, id: string, err: any, rows: any) {
+        if (rows && rows.length > 0) {
             let where = this.attributes.idFieldName + "='" + id + "'";
             this.update(callback, body, where);
-        }else{
+        } else {
             this.insert(callback, body);
         }
     }
@@ -289,21 +294,21 @@ export class DatabaseTable extends DatabaseRecordset {
      * @param {any} body - Object to update
      * @param {string} id - Id of the record
      * @return {void}
-     */    
-    save (callback: Function, body: any): void{
+     */
+    save(callback: Function, body: any): void {
         let where = this.attributes.idFieldName + "='" + body[this.attributes.idFieldName] + "'";
         let sql = "SELECT * FROM " + this.attributes.from + " WHERE " + where;
         this.query((err: any, rows: any) => this.callbackUnique(callback, body, body[this.attributes.idFieldName], err, rows), sql);
     }
 
-    private callbackFresh(err: any, rows: any, callback: Function){
+    private callbackFresh(err: any, rows: any, callback: Function) {
         let body: any = {};
-        if (rows){
-            for (var i = 0 ; i < rows.length; i++){
+        if (rows) {
+            for (var i = 0; i < rows.length; i++) {
                 body[rows[i].Field] = "";
             }
         }
-        if (callback){
+        if (callback) {
             let arr = [];
             arr.push(body);
             callback(err, arr);
@@ -314,8 +319,8 @@ export class DatabaseTable extends DatabaseRecordset {
      * Retreives an empty record
      * @param {Function} callback - Callback function
      * @return {void}
-     */    
-    fresh (callback: Function){
+     */
+    fresh(callback: Function) {
         let sql = "SHOW FIELDS FROM " + this.attributes.from;
         this.query((err: any, rows: any) => this.callbackFresh(err, rows, callback), sql);
     }

@@ -19,6 +19,7 @@ export declare class DatabaseObject {
      * @param {string} sql - Sql query
      * @return {void}
      */
+    protected queryOld(callback: Function, sql: string): void;
     protected query(callback: Function, sql: string): void;
     /**
      * Retrieve a sql sentence refering to a 'where' by concataining fields and logic operators

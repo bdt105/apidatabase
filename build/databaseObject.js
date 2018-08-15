@@ -18,9 +18,14 @@ class DatabaseObject {
      * @param {string} sql - Sql query
      * @return {void}
      */
-    query(callback, sql) {
+    queryOld(callback, sql) {
         if (this.connexion) {
             this.connexion.querySql((err, rows) => callback(err, rows), sql);
+        }
+    }
+    query(callback, sql) {
+        if (this.connexion) {
+            this.connexion.queryPool((err, rows) => callback(err, rows), sql);
         }
     }
     /**
