@@ -33,7 +33,13 @@ app.use(function (req, res, next) {
 });
 
 let conn = new Connexion(configuration.mySql, configuration.authentification);
-conn.tryConnectSql();
+let fake = (error: any, rows: any) =>{
+    console.log("Error: ", JSON.stringify(error))
+    console.log("Rows: ", JSON.stringify(rows))
+}
+
+conn.queryPool(
+    (error: any, data: any) => fake(error, data), "SHOW DATABASES;");
 
 // Contact Header
 new TableApi(app, conn, true).assign();

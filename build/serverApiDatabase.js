@@ -26,7 +26,11 @@ app.use(function (req, res, next) {
     next();
 });
 let conn = new dist_1.Connexion(configuration.mySql, configuration.authentification);
-conn.tryConnectSql();
+let fake = (error, rows) => {
+    console.log("Error: ", JSON.stringify(error));
+    console.log("Rows: ", JSON.stringify(rows));
+};
+conn.queryPool((error, data) => fake(error, data), "SHOW DATABASES;");
 // Contact Header
 new index_1.TableApi(app, conn, true).assign();
 new index_1.RecordsetApi(app, conn, true).assignObject();
