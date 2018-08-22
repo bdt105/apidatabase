@@ -64,7 +64,7 @@ export declare class DatabaseRecordset extends DatabaseObject {
      * @return {string} - Sql sentence
      */
     protected getSql(): string;
-    protected whereString(fieldValues: FieldValue[], defaultLogicoperator?: string, defaultComparisonOperator?: string): string;
+    protected whereString(fieldValues: FieldValue[]): string;
     /**
      * Queries the recordset an popultates the result
      * @param {Function} - Callback function to cal when work is done
@@ -81,7 +81,7 @@ export declare class DatabaseRecordset extends DatabaseObject {
 }
 /** Class to get a table, allows crud functions */
 export declare class DatabaseTable extends DatabaseRecordset {
-    private callbackSearch(err, rows, prefix, operator, q, callback);
+    private callbackSearch(err, rows, formula, operator, q, callback);
     /**
      * Load data from the id
      * @param {Function} - Callback function
@@ -104,7 +104,7 @@ export declare class DatabaseTable extends DatabaseRecordset {
      * @param {string} suffix - suffix of the condition for each field
      * @return {void}
      */
-    search(callback: Function, q: string, prefix: string, suffix: string): void;
+    search(callback: Function, q: string, formula: string, operator: string): void;
     private insertString(body);
     /**
      * Inserts a record inside the table

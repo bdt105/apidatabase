@@ -117,7 +117,7 @@ export class DatabaseRecordset extends DatabaseObject {
         return "SELECT " + this.attributes.select + " FROM " + this.attributes.from + (this.attributes.extra ? " " + this.attributes.extra : "") + this.getSqlend();
     }
 
-    protected whereString(fieldValues: FieldValue[], defaultLogicoperator = "AND", defaultComparisonOperator = "="): string {
+    protected whereString(fieldValues: FieldValue[]): string {
         var ret = "";
         if (fieldValues) {
             for (var i = 0; i < fieldValues.length; i++) {
@@ -151,14 +151,20 @@ export class DatabaseRecordset extends DatabaseObject {
 /** Class to get a table, allows crud functions */
 export class DatabaseTable extends DatabaseRecordset {
 
-    private callbackSearch(err: any, rows: any, prefix: string, operator: string, q: string, callback: Function) {
-        let searchString = "";
-        for (var i = 0; i < rows.length; i++) {
-            searchString += (searchString == "" ? "" : " " + operator + " ") + rows[i].Field + prefix.replace("[]", q);
-        }
-        if (callback) {
-            this.attributes.where = searchString;
-            this.query((err: any, rows: any) => callback(err, rows), this.getSql());
+    private callbackSearch(err: any, rows: any, formula: string, operator: string, q: string, callback: Function) {
+        if (!err) {
+            let searchString = "";
+            for (var i = 0; i < rows.length; i++) {
+                searchString += (searchString == "" ? "" : " " + operator + " ") + rows[i].Field + formula.replace("##", q);
+            }
+            if (callback) {
+                this.attributes.where = searchString;
+                this.query((err: any, rows: any) => callback(err, rows), this.getSql());
+            }
+        } else {
+            if (callback) {
+                callback(err, null);
+            }
         }
     }
 
@@ -192,9 +198,9 @@ export class DatabaseTable extends DatabaseRecordset {
      * @param {string} suffix - suffix of the condition for each field
      * @return {void}
      */
-    search(callback: Function, q: string, prefix: string, suffix: string) {
+    search(callback: Function, q: string, formula: string, operator: string) {
         if (q) {
-            this.query((err: any, rows: any) => this.callbackSearch(err, rows, prefix, suffix, q, callback), "SHOW FIELDS FROM " + this.attributes.from);
+            this.query((err: any, rows: any) => this.callbackSearch(err, rows, formula, operator, q, callback), "SHOW FIELDS FROM " + this.attributes.from);
         } else {
             this.query((err: any, rows: any) => callback(err, rows), this.getSql());
         }

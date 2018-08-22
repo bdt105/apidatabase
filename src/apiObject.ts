@@ -114,11 +114,12 @@ export class TableApi extends BaseApi {
         this.app.post('/table', upload.array(), (request: any, response: any) => {
             let queryAttributes = new QueryAttribute();
             queryAttributes.from = request.body.tableName;
-            queryAttributes.select = "*";
+            queryAttributes.select = !request.body.select ? "*" : request.body.select;
             queryAttributes.where = request.body.where;
             queryAttributes.limit = request.body.limit;
             queryAttributes.offset = request.body.offset;
             queryAttributes.orderby = request.body.orderby;
+            let searchTerm = request.body.searchTerm;
             let token = request.body.token;
 
             let callback = (err: any, data: any) => {
@@ -138,8 +139,11 @@ export class TableApi extends BaseApi {
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
-
-            table.load(callback);
+            if (request.body.searchTerm) {
+                table.search(callback, searchTerm, " like '%##%'", "OR");
+            } else {
+                table.load(callback);
+            }
         });
 
         // Saves an objects
@@ -148,6 +152,7 @@ export class TableApi extends BaseApi {
             let object = request.body.object;
             let queryAttributes = new QueryAttribute();
             queryAttributes.from = request.body.tableName;
+            queryAttributes.orderby = request.body.orderby;
             queryAttributes.select = "*";
             queryAttributes.idFieldName = request.body.idFieldName ? request.body.idFieldName.toString() : null;
 
@@ -210,6 +215,41 @@ export class TableApi extends BaseApi {
 
             table.fresh(callback);
         });
+
+        // Gets an empty record
+        // this.app.post('/table/search', upload.array(), (request: any, response: any) => {
+        //     let token = request.body.token;
+        //     let searchTerm = request.body.searchTerm;
+        //     let queryAttributes = new QueryAttribute();
+        //     queryAttributes.from = request.body.tableName;
+        //     queryAttributes.select = "*";
+        //     queryAttributes.limit = request.body.limit;
+        //     queryAttributes.offset = request.body.offset;
+        //     queryAttributes.orderby = request.body.orderby;
+
+        //     let callback = (err: any, data: any) => {
+        //         if (err) {
+        //             this.respond(response, 500, err);
+        //         } else {
+        //             this.respond(response, 200, data);
+        //         }
+        //     }
+
+        //     if (this.requiresToken) {
+        //         let authent = this.connexion.checkJwt(token);
+        //         if (!authent.decoded) {
+        //             this.respond(response, 403, 'Token is absent or invalid');
+        //             return;
+        //         }
+        //     }
+
+        //     let table = new DatabaseTable(this.connexion, queryAttributes);
+        //     if (request.body.searchTerm) {
+        //         table.search(callback, searchTerm, " like '%##%'", "OR");
+        //     } else {
+        //         callback("No search term", null);
+        //     }
+        // });
 
         // Deletes some records
         this.app.delete('/table', upload.array(), (request: any, response: any) => {
