@@ -5,7 +5,8 @@
         "user": "root",
         "port": "3306",
         "password": "root",
-        "database": "listing"
+        "database": "listing",
+        "fileDirectory": "/var/lib/mysql-files/" 
     },
     "common":
     {
@@ -13,7 +14,10 @@
         "elasticUrl": "http://localhost:9200",
         "elasticIndex": "rule",
         "logFileName": "rule.log",
-        "logToConsole": true
+        "logToConsole": true,
+        "exportDirectory": "/var/www/html/listing/export/",
+        "exportUrl": "http://localhost/listing/export/"
+
     },
     "authentification": 
     {

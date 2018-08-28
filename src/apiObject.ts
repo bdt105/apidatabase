@@ -8,14 +8,16 @@ export class BaseApi {
     protected app: any;
     protected connexion: Connexion;
     protected requiresToken: boolean;
+    protected configuration: any;
 
     protected myToolbox: MyToolbox;
 
     protected moment: any;
 
-    constructor(app: any, connexion: Connexion, requiresToken: boolean = false) {
+    constructor(app: any, connexion: Connexion, configuration: any, requiresToken: boolean = false) {
         this.app = app;
         this.connexion = connexion;
+        this.configuration = configuration;
         this.requiresToken = requiresToken;
         this.myToolbox = new MyToolbox();
         this.moment = require('moment');
@@ -91,6 +93,58 @@ export class RecordsetApi extends BaseApi {
             } else {
                 recordset.load(callback);
             }
+        });
+
+        // export records of the query
+        this.app.post('/query/csv', upload.array(), (request: any, response: any) => {
+            let queryAttributes = new QueryAttribute();
+            let sql = request.body.sql;
+            queryAttributes.from = request.body.from;
+            queryAttributes.select = request.body.select;
+            queryAttributes.where = request.body.where;
+            queryAttributes.limit = request.body.limit;
+            queryAttributes.offset = request.body.offset;
+            queryAttributes.orderby = request.body.orderby;
+            queryAttributes.groupby = request.body.groupby;
+            queryAttributes.extra = request.body.extra;
+            let token = request.body.token;
+            let fieldTerminatedBy = request.body.fieldTerminatedBy ? request.body.fieldTerminatedBy : ';';
+            let fieldEnclosedBy = request.body.fieldEnclosedBy ? request.body.fieldEnclosedBy : '"';
+            let lineTerminatedBy = request.body.lineTerminatedBy ? request.body.lineTerminatedBy : '\n';
+
+            let fileName = this.myToolbox.getUniqueId() + '.csv';
+
+            let callback = (err: any, data: any) => {
+                if (err) {
+                    this.respond(response, 500, err);
+                } else {
+                    let fs = require('fs');
+                    fs.renameSync(this.configuration.mySql.fileDirectory + fileName, this.configuration.common.exportDirectory + fileName)
+                    data.fileUrl = this.configuration.common.exportUrl + fileName;
+                    this.respond(response, 200, data);
+                }
+            }
+
+            if (this.requiresToken) {
+                let authent = this.connexion.checkJwt(token);
+                if (!authent.decoded) {
+                    this.respond(response, 403, 'Token is absent or invalid');
+                    return;
+                }
+            }
+
+            let recordset = new DatabaseRecordset(this.connexion, queryAttributes);
+
+            let realSql = sql;
+            if (!realSql) {
+                realSql = recordset.getSql();
+            }
+
+            realSql += " " +
+            ` AS R INTO OUTFILE '` + this.configuration.mySql.fileDirectory + fileName + `'
+            FIELDS TERMINATED BY '` + fieldTerminatedBy + `' ENCLOSED BY '` + fieldEnclosedBy + `' LINES TERMINATED BY '` + lineTerminatedBy + `'`;
+
+            recordset.sql(callback, realSql);
         });
     }
 }

@@ -33,17 +33,18 @@ app.use(function (req, res, next) {
 });
 
 let conn = new Connexion(configuration.mySql, configuration.authentification);
-let fake = (error: any, rows: any) =>{
+let fake = (error: any, rows: any) => {
     console.log("Error: ", JSON.stringify(error))
     console.log("Rows: ", JSON.stringify(rows))
 }
 
 conn.queryPool(
-    (error: any, data: any) => fake(error, data), "SHOW DATABASES;");
+    (error: any, data: any) => fake(error, data), "SHOW DATABASES;"
+);
 
 // Contact Header
-new TableApi(app, conn, true).assign();
-new RecordsetApi(app, conn, true).assignObject();
+new TableApi(app, conn, configuration, true).assign();
+new RecordsetApi(app, conn, configuration, true).assignObject();
 
 app.listen(port);
 toolbox.log("Listening on port " + port);

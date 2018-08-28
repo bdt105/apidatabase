@@ -4,9 +4,10 @@ export declare class BaseApi {
     protected app: any;
     protected connexion: Connexion;
     protected requiresToken: boolean;
+    protected configuration: any;
     protected myToolbox: MyToolbox;
     protected moment: any;
-    constructor(app: any, connexion: Connexion, requiresToken?: boolean);
+    constructor(app: any, connexion: Connexion, configuration: any, requiresToken?: boolean);
     protected errorMessage(text: string): {
         "status": string;
         "message": string;

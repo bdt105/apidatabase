@@ -32,8 +32,8 @@ let fake = (error, rows) => {
 };
 conn.queryPool((error, data) => fake(error, data), "SHOW DATABASES;");
 // Contact Header
-new index_1.TableApi(app, conn, true).assign();
-new index_1.RecordsetApi(app, conn, true).assignObject();
+new index_1.TableApi(app, conn, configuration, true).assign();
+new index_1.RecordsetApi(app, conn, configuration, true).assignObject();
 app.listen(port);
 toolbox.log("Listening on port " + port);
 //# sourceMappingURL=serverApiDatabase.js.map

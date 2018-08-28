@@ -113,7 +113,7 @@ export class DatabaseRecordset extends DatabaseObject {
      * Retrieves a sql phrase with all paramters
      * @return {string} - Sql sentence
      */
-    protected getSql() {
+    getSql() {
         return "SELECT " + this.attributes.select + " FROM " + this.attributes.from + (this.attributes.extra ? " " + this.attributes.extra : "") + this.getSqlend();
     }
 

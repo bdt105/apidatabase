@@ -63,7 +63,7 @@ export declare class DatabaseRecordset extends DatabaseObject {
      * Retrieves a sql phrase with all paramters
      * @return {string} - Sql sentence
      */
-    protected getSql(): string;
+    getSql(): string;
     protected whereString(fieldValues: FieldValue[]): string;
     /**
      * Queries the recordset an popultates the result
