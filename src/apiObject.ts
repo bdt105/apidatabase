@@ -141,8 +141,7 @@ export class RecordsetApi extends BaseApi {
             }
 
             realSql += " " +
-            ` AS R INTO OUTFILE '` + this.configuration.mySql.fileDirectory + fileName + `'
-            FIELDS TERMINATED BY '` + fieldTerminatedBy + `' ENCLOSED BY '` + fieldEnclosedBy + `' LINES TERMINATED BY '` + lineTerminatedBy + `'`;
+            ` AS R INTO OUTFILE '` + this.configuration.mySql.fileDirectory + fileName + `' CHARACTER SET utf8 FIELDS TERMINATED BY '` + fieldTerminatedBy + `' ENCLOSED BY '` + fieldEnclosedBy + `' LINES TERMINATED BY '` + lineTerminatedBy + `'`;
 
             recordset.sql(callback, realSql);
         });
