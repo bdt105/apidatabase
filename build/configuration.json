@@ -15,8 +15,8 @@
         "elasticIndex": "rule",
         "logFileName": "rule.log",
         "logToConsole": true,
-        "exportDirectory": "/var/www/html/listing/export/",
-        "exportUrl": "http://localhost/listing/export/"
+        "exportDirectory": "/var/www/html/listingExport/",
+        "exportUrl": "http://localhost/listingExport/"
 
     },
     "authentification": 
