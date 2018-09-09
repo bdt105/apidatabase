@@ -9,6 +9,7 @@
     "bdt105toolbox": "^1.0.102",
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
+    "google-auth-library": "^2.0.0",
     "moment": "^2.20.1",
     "multer": "^1.3.0",
     "mysql": "^2.16.0",

@@ -41,6 +41,70 @@ export class BaseApi {
         let temp = JSON.stringify(data);
         response.send(temp);
     }
+
+    private verifyGoogleWebToken(callback: Function, token: string) {
+        this.verifyGoogleToken(callback, this.configuration.authentification.googleWebClientId, token);
+    }
+
+    private verifyGoogleAndroidToken(callback: Function, token: string) {
+        return this.verifyGoogleToken(callback, this.configuration.authentification.googleAndroidClientId, token);
+    }
+
+    private verifyGoogleIOsToken(callback: Function, token: string) {
+        return this.verifyGoogleToken(callback, this.configuration.authentification.googleIOsClientId, token);
+    }
+
+    protected checkToken(token: string) {
+        let authent = this.connexion.checkJwt(token);
+        if (authent.decoded) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected checkTokenGoogle(callback: Function, token: string) {
+        let authent = this.connexion.checkJwt(token);
+        if (!authent.decoded) {
+            this.verifyGoogleWebToken(
+                (data: any) => {
+                    if (data && data.status == "OK") {
+                        callback(data)
+                    } else {
+                        this.verifyGoogleAndroidToken((data: any) => {
+                            if (data && data.status == "OK") {
+                                callback(data)
+                            } else {
+                                this.verifyGoogleIOsToken((data: any) => {
+                                    if (data && data.status == "OK") {
+                                        callback(data)
+                                    } else {
+                                        callback({ "status": "ERR", "payload": null });
+                                    }
+                                }, token);
+
+                            }
+                        }, token);
+                    }
+                }, token);
+        } else {
+            callback({ "status": "OK", "payload": authent });
+        }
+    }
+
+    private verifyGoogleToken(callback: Function, clientId: string, token: string) {
+        let { OAuth2Client } = require('google-auth-library');
+        let client = new OAuth2Client(clientId);
+        client.verifyIdToken({
+            idToken: token,
+            audience: clientId
+        }).then((value: any) => {
+            let payload = value.getPayload();
+            callback({ "status": "OK", "payload": payload });
+        }).catch((reason: any) => {
+            callback({ "status": "ERR", "payload": reason });
+        });
+    }
 }
 
 export class RecordsetApi extends BaseApi {
@@ -50,9 +114,11 @@ export class RecordsetApi extends BaseApi {
         this.app.get('/', (request: any, response: any) => {
             this.respond(response, 200, 'API database is running');
         });
+
         this.app.get('/query', (request: any, response: any) => {
-            this.respond(response, 200, 'API query is running');
+            this.respond(response, 200, 'API query is running !!');
         });
+
         let multer = require('multer');
         let upload = multer();
 
@@ -78,12 +144,8 @@ export class RecordsetApi extends BaseApi {
                 }
             }
 
-            if (this.requiresToken) {
-                let authent = this.connexion.checkJwt(token);
-                if (!authent.decoded) {
-                    this.respond(response, 403, 'Token is absent or invalid');
-                    return;
-                }
+            if (this.requiresToken && !this.checkToken(token)) {
+                this.respond(response, 403, 'Token is absent or invalid');
             }
 
             let recordset = new DatabaseRecordset(this.connexion, queryAttributes);
@@ -125,12 +187,8 @@ export class RecordsetApi extends BaseApi {
                 }
             }
 
-            if (this.requiresToken) {
-                let authent = this.connexion.checkJwt(token);
-                if (!authent.decoded) {
-                    this.respond(response, 403, 'Token is absent or invalid');
-                    return;
-                }
+            if (this.requiresToken && !this.checkToken(token)) {
+                this.respond(response, 403, 'Token is absent or invalid');
             }
 
             let recordset = new DatabaseRecordset(this.connexion, queryAttributes);
@@ -141,7 +199,7 @@ export class RecordsetApi extends BaseApi {
             }
 
             realSql += " " +
-            ` AS R INTO OUTFILE '` + this.configuration.mySql.fileDirectory + fileName + `' CHARACTER SET utf8 FIELDS TERMINATED BY '` + fieldTerminatedBy + `' ENCLOSED BY '` + fieldEnclosedBy + `' LINES TERMINATED BY '` + lineTerminatedBy + `'`;
+                ` AS R INTO OUTFILE '` + this.configuration.mySql.fileDirectory + fileName + `' CHARACTER SET utf8 FIELDS TERMINATED BY '` + fieldTerminatedBy + `' ENCLOSED BY '` + fieldEnclosedBy + `' LINES TERMINATED BY '` + lineTerminatedBy + `'`;
 
             recordset.sql(callback, realSql);
         });
@@ -183,20 +241,18 @@ export class TableApi extends BaseApi {
                 }
             }
 
-            if (this.requiresToken) {
-                let authent = this.connexion.checkJwt(token);
-                if (!authent.decoded) {
-                    this.respond(response, 403, 'Token is absent or invalid');
-                    return;
-                }
+            if (this.requiresToken && !this.checkToken(token)) {
+                this.respond(response, 403, 'Token is absent or invalid');
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
+
             if (request.body.searchTerm) {
                 table.search(callback, searchTerm, " like '%##%'", "OR");
             } else {
                 table.load(callback);
             }
+
         });
 
         // Saves an objects
@@ -227,13 +283,8 @@ export class TableApi extends BaseApi {
                 return;
             }
 
-            if (this.requiresToken) {
-                let authent: any = this.connexion.checkJwt(token);
-                if (!authent.decoded) {
-                    this.respond(response, 403, 'Token is absent or invalid');
-                    return;
-                }
-
+            if (this.requiresToken && !this.checkToken(token)) {
+                this.respond(response, 403, 'Token is absent or invalid');
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
@@ -256,53 +307,14 @@ export class TableApi extends BaseApi {
                 }
             }
 
-            if (this.requiresToken) {
-                let authent = this.connexion.checkJwt(token);
-                if (!authent.decoded) {
-                    this.respond(response, 403, 'Token is absent or invalid');
-                    return;
-                }
+            if (this.requiresToken && !this.checkToken(token)) {
+                this.respond(response, 403, 'Token is absent or invalid');
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
 
             table.fresh(callback);
         });
-
-        // Gets an empty record
-        // this.app.post('/table/search', upload.array(), (request: any, response: any) => {
-        //     let token = request.body.token;
-        //     let searchTerm = request.body.searchTerm;
-        //     let queryAttributes = new QueryAttribute();
-        //     queryAttributes.from = request.body.tableName;
-        //     queryAttributes.select = "*";
-        //     queryAttributes.limit = request.body.limit;
-        //     queryAttributes.offset = request.body.offset;
-        //     queryAttributes.orderby = request.body.orderby;
-
-        //     let callback = (err: any, data: any) => {
-        //         if (err) {
-        //             this.respond(response, 500, err);
-        //         } else {
-        //             this.respond(response, 200, data);
-        //         }
-        //     }
-
-        //     if (this.requiresToken) {
-        //         let authent = this.connexion.checkJwt(token);
-        //         if (!authent.decoded) {
-        //             this.respond(response, 403, 'Token is absent or invalid');
-        //             return;
-        //         }
-        //     }
-
-        //     let table = new DatabaseTable(this.connexion, queryAttributes);
-        //     if (request.body.searchTerm) {
-        //         table.search(callback, searchTerm, " like '%##%'", "OR");
-        //     } else {
-        //         callback("No search term", null);
-        //     }
-        // });
 
         // Deletes some records
         this.app.delete('/table', upload.array(), (request: any, response: any) => {
@@ -320,18 +332,8 @@ export class TableApi extends BaseApi {
                 }
             }
 
-            if (this.requiresToken) {
-                let authent: any = this.connexion.checkJwt(token);
-                if (!authent.decoded) {
-                    this.respond(response, 403, 'Token is absent or invalid');
-                    return;
-                }
-                // } else {
-                //     if (authent.decoded.type != 1) {
-                //         this.respond(response, 403, "This function is for administrators only");
-                //         return;
-                //     }
-                // }
+            if (this.requiresToken && !this.checkToken(token)) {
+                this.respond(response, 403, 'Token is absent or invalid');
             }
 
             if (!where) {

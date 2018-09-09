@@ -18,7 +18,7 @@
             "cwd": "${workspaceRoot}/build/",
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceRoot}/dist/**/*.js"
+                "${workspaceRoot}/build/**/*.js"
             ]
         }
     ]
