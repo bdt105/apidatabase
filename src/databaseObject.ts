@@ -14,6 +14,8 @@ export class DatabaseObject {
     protected connexion: Connexion;
     protected toolbox: Toolbox;
 
+    logToConsole = false;
+
     constructor(connexion: Connexion) {
         this.connexion = connexion;
         this.toolbox = new Toolbox();
@@ -28,14 +30,30 @@ export class DatabaseObject {
      */
     protected queryOld(callback: Function, sql: string) {
         if (this.connexion) {
+            if (this.logToConsole) {
+                console.log("Start of executing: \n" + sql);
+            }
             this.connexion.querySql(
-                (err: any, rows: any) => callback(err, rows), sql);
+                (err: any, rows: any) => {
+                    console.log("End of executing: \n" + sql);
+                    callback(err, rows)
+                }, sql);
         }
     }
     protected query(callback: Function, sql: string) {
+        if (this.logToConsole) {
+            let time = this.toolbox.dateToDbString(new Date());
+            console.log(time + " - Start of executing: \n" + sql + "\n");
+        }
         if (this.connexion) {
             this.connexion.queryPool(
-                (err: any, rows: any) => callback(err, rows), sql);
+                (err: any, rows: any) => {
+                    if (this.logToConsole) {
+                        let time = this.toolbox.dateToDbString(new Date());
+                        console.log(time + " - End of executing: \n" + sql + "\n");
+                    }
+                    callback(err, rows)
+                }, sql);
         }
     }
 

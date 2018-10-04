@@ -11,6 +11,7 @@ export declare class FieldValue {
 export declare class DatabaseObject {
     protected connexion: Connexion;
     protected toolbox: Toolbox;
+    logToConsole: boolean;
     constructor(connexion: Connexion);
     /**
      * Queries the database and then calls the callback function sending retrieved data

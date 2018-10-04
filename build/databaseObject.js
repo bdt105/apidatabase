@@ -8,6 +8,7 @@ exports.FieldValue = FieldValue;
 /** Basic database class */
 class DatabaseObject {
     constructor(connexion) {
+        this.logToConsole = false;
         this.connexion = connexion;
         this.toolbox = new dist_1.Toolbox();
     }
@@ -20,12 +21,28 @@ class DatabaseObject {
      */
     queryOld(callback, sql) {
         if (this.connexion) {
-            this.connexion.querySql((err, rows) => callback(err, rows), sql);
+            if (this.logToConsole) {
+                console.log("Start of executing: \n" + sql);
+            }
+            this.connexion.querySql((err, rows) => {
+                console.log("End of executing: \n" + sql);
+                callback(err, rows);
+            }, sql);
         }
     }
     query(callback, sql) {
+        if (this.logToConsole) {
+            let time = this.toolbox.dateToDbString(new Date());
+            console.log(time + " - Start of executing: \n" + sql + "\n");
+        }
         if (this.connexion) {
-            this.connexion.queryPool((err, rows) => callback(err, rows), sql);
+            this.connexion.queryPool((err, rows) => {
+                if (this.logToConsole) {
+                    let time = this.toolbox.dateToDbString(new Date());
+                    console.log(time + " - End of executing: \n" + sql + "\n");
+                }
+                callback(err, rows);
+            }, sql);
         }
     }
     /**

@@ -17,7 +17,6 @@
         "logToConsole": true,
         "exportDirectory": "/var/www/html/listing/export/",
         "exportUrl": "http://localhost/listing/export/"
-
     },
     "authentification": 
     {

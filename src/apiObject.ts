@@ -149,6 +149,7 @@ export class RecordsetApi extends BaseApi {
             }
 
             let recordset = new DatabaseRecordset(this.connexion, queryAttributes);
+            recordset.logToConsole = this.configuration.common.logToConsole;
 
             if (sql) {
                 recordset.sql(callback, sql);
@@ -192,6 +193,7 @@ export class RecordsetApi extends BaseApi {
             }
 
             let recordset = new DatabaseRecordset(this.connexion, queryAttributes);
+            recordset.logToConsole = this.configuration.common.logToConsole;
 
             let realSql = sql;
             if (!realSql) {
@@ -246,6 +248,7 @@ export class TableApi extends BaseApi {
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
 
             if (request.body.searchTerm) {
                 table.search(callback, searchTerm, " like '%##%'", "OR");
@@ -288,6 +291,7 @@ export class TableApi extends BaseApi {
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
 
             table.save(callback, object);
         });
@@ -312,6 +316,7 @@ export class TableApi extends BaseApi {
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
 
             table.fresh(callback);
         });
@@ -342,6 +347,7 @@ export class TableApi extends BaseApi {
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
 
             table.deleteFromWhere(callback, where);
         });

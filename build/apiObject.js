@@ -128,6 +128,7 @@ class RecordsetApi extends BaseApi {
                 this.respond(response, 403, 'Token is absent or invalid');
             }
             let recordset = new databaseObject_1.DatabaseRecordset(this.connexion, queryAttributes);
+            recordset.logToConsole = this.configuration.common.logToConsole;
             if (sql) {
                 recordset.sql(callback, sql);
             }
@@ -167,6 +168,7 @@ class RecordsetApi extends BaseApi {
                 this.respond(response, 403, 'Token is absent or invalid');
             }
             let recordset = new databaseObject_1.DatabaseRecordset(this.connexion, queryAttributes);
+            recordset.logToConsole = this.configuration.common.logToConsole;
             let realSql = sql;
             if (!realSql) {
                 realSql = recordset.getSql();
@@ -212,6 +214,7 @@ class TableApi extends BaseApi {
                 this.respond(response, 403, 'Token is absent or invalid');
             }
             let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
             if (request.body.searchTerm) {
                 table.search(callback, searchTerm, " like '%##%'", "OR");
             }
@@ -248,6 +251,7 @@ class TableApi extends BaseApi {
                 this.respond(response, 403, 'Token is absent or invalid');
             }
             let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
             table.save(callback, object);
         });
         // Gets an empty record
@@ -268,6 +272,7 @@ class TableApi extends BaseApi {
                 this.respond(response, 403, 'Token is absent or invalid');
             }
             let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
             table.fresh(callback);
         });
         // Deletes some records
@@ -293,6 +298,7 @@ class TableApi extends BaseApi {
                 return;
             }
             let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
             table.deleteFromWhere(callback, where);
         });
     }
