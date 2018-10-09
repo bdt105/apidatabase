@@ -35,8 +35,19 @@ export class BaseApi {
             response.setHeader('content-type', 'test/plain');
         }
 
-        Date.prototype.toJSON = function () {
-            return this.toLocaleString();
+        let datesToString = this.configuration.common.datesToString;
+
+        if (datesToString) {
+            Date.prototype.toJSON = function () {
+                let d = this.getFullYear() + "-" +
+                    ((this.getMonth() + 1).toString().length < 2 ? "0" : "") + (this.getMonth() + 1) + "-" +
+                    (this.getDate().toString().length < 2 ? "0" : "") + this.getDate() + " " +
+                    (this.getHours().toString().length < 2 ? "0" : "") + this.getHours() + ":" +
+                    (this.getMinutes().toString().length < 2 ? "0" : "") + this.getMinutes() + ":" +
+                    (this.getSeconds().toString().length < 2 ? "0" : "") + this.getSeconds();
+
+                return d;
+            }
         }
         let temp = JSON.stringify(data);
         response.send(temp);
@@ -319,6 +330,31 @@ export class TableApi extends BaseApi {
             table.logToConsole = this.configuration.common.logToConsole;
 
             table.fresh(callback);
+        });
+
+        // Gets an empty record
+        this.app.post('/table/fields', upload.array(), (request: any, response: any) => {
+            let token = request.body.token;
+            let queryAttributes = new QueryAttribute();
+            queryAttributes.from = request.body.tableName;
+            queryAttributes.select = "*";
+
+            let callback = (err: any, data: any) => {
+                if (err) {
+                    this.respond(response, 500, err);
+                } else {
+                    this.respond(response, 200, data);
+                }
+            }
+
+            if (this.requiresToken && !this.checkToken(token)) {
+                this.respond(response, 403, 'Token is absent or invalid');
+            }
+
+            let table = new DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
+
+            table.fields(callback);
         });
 
         // Deletes some records

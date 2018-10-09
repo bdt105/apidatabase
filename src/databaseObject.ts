@@ -176,7 +176,7 @@ export class DatabaseTable extends DatabaseRecordset {
                 searchString += (searchString == "" ? "" : " " + operator + " ") + rows[i].Field + formula.replace("##", q);
             }
             if (callback) {
-                this.attributes.where = searchString;
+                this.attributes.where = this.attributes.where ? this.attributes.where + " AND (" + searchString + ")" : searchString;
                 this.query((err: any, rows: any) => callback(err, rows), this.getSql());
             }
         } else {
@@ -347,5 +347,15 @@ export class DatabaseTable extends DatabaseRecordset {
     fresh(callback: Function) {
         let sql = "SHOW FIELDS FROM " + this.attributes.from;
         this.query((err: any, rows: any) => this.callbackFresh(err, rows, callback), sql);
+    }
+
+    /**
+     * Retreives an empty record
+     * @param {Function} callback - Callback function
+     * @return {void}
+     */
+    fields(callback: Function) {
+        let sql = "SHOW FIELDS FROM " + this.attributes.from;
+        this.query((err: any, rows: any) => callback(err, rows), sql);
     }
 }
