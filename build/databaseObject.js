@@ -145,7 +145,7 @@ class DatabaseTable extends DatabaseRecordset {
                 searchString += (searchString == "" ? "" : " " + operator + " ") + rows[i].Field + formula.replace("##", q);
             }
             if (callback) {
-                this.attributes.where = searchString;
+                this.attributes.where = this.attributes.where ? this.attributes.where + " AND (" + searchString + ")" : searchString;
                 this.query((err, rows) => callback(err, rows), this.getSql());
             }
         }
@@ -302,6 +302,15 @@ class DatabaseTable extends DatabaseRecordset {
     fresh(callback) {
         let sql = "SHOW FIELDS FROM " + this.attributes.from;
         this.query((err, rows) => this.callbackFresh(err, rows, callback), sql);
+    }
+    /**
+     * Retreives an empty record
+     * @param {Function} callback - Callback function
+     * @return {void}
+     */
+    fields(callback) {
+        let sql = "SHOW FIELDS FROM " + this.attributes.from;
+        this.query((err, rows) => callback(err, rows), sql);
     }
 }
 exports.DatabaseTable = DatabaseTable;

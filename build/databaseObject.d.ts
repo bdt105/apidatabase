@@ -161,4 +161,10 @@ export declare class DatabaseTable extends DatabaseRecordset {
      * @return {void}
      */
     fresh(callback: Function): void;
+    /**
+     * Retreives an empty record
+     * @param {Function} callback - Callback function
+     * @return {void}
+     */
+    fields(callback: Function): void;
 }

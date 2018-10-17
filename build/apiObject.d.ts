@@ -26,4 +26,5 @@ export declare class RecordsetApi extends BaseApi {
 export declare class TableApi extends BaseApi {
     assign(): void;
     protected assignObject(): void;
+    deleteRecord(body: any, response: any): void;
 }

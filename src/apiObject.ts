@@ -359,33 +359,43 @@ export class TableApi extends BaseApi {
 
         // Deletes some records
         this.app.delete('/table', upload.array(), (request: any, response: any) => {
-            let token = request.body.token;
-            let where = request.body.where;
-            let queryAttributes = new QueryAttribute();
-            queryAttributes.from = request.body.tableName;
-            queryAttributes.select = "*";
-
-            let callback = (err: any, data: any) => {
-                if (err) {
-                    this.respond(response, 500, err);
-                } else {
-                    this.respond(response, 200, data);
-                }
-            }
-
-            if (this.requiresToken && !this.checkToken(token)) {
-                this.respond(response, 403, 'Token is absent or invalid');
-            }
-
-            if (!where) {
-                this.respond(response, 400, "Please define a where to set all records to delete");
-                return;
-            }
-
-            let table = new DatabaseTable(this.connexion, queryAttributes);
-            table.logToConsole = this.configuration.common.logToConsole;
-
-            table.deleteFromWhere(callback, where);
+            let body = request.body;
+            this.deleteRecord(body, response);
         });
+
+        this.app.post('/table/delete', upload.array(), (request: any, response: any) => {
+            let body = request.body;
+            this.deleteRecord(body, response);
+        });
+    }
+
+    deleteRecord(body: any, response: any){
+        let token = body.token;
+        let where = body.where;
+        let queryAttributes = new QueryAttribute();
+        queryAttributes.from = body.tableName;
+        queryAttributes.select = "*";
+
+        let callback = (err: any, data: any) => {
+            if (err) {
+                this.respond(response, 500, err);
+            } else {
+                this.respond(response, 200, data);
+            }
+        }
+
+        if (this.requiresToken && !this.checkToken(token)) {
+            this.respond(response, 403, 'Token is absent or invalid');
+        }
+
+        if (!where) {
+            this.respond(response, 400, "Please define a where to set all records to delete");
+            return;
+        }
+
+        let table = new DatabaseTable(this.connexion, queryAttributes);
+        table.logToConsole = this.configuration.common.logToConsole;
+
+        table.deleteFromWhere(callback, where);            
     }
 }    

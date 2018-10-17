@@ -24,9 +24,18 @@ class BaseApi {
         else {
             response.setHeader('content-type', 'test/plain');
         }
-        Date.prototype.toJSON = function () {
-            return this.toLocaleString();
-        };
+        let datesToString = this.configuration.common.datesToString;
+        if (datesToString) {
+            Date.prototype.toJSON = function () {
+                let d = this.getFullYear() + "-" +
+                    ((this.getMonth() + 1).toString().length < 2 ? "0" : "") + (this.getMonth() + 1) + "-" +
+                    (this.getDate().toString().length < 2 ? "0" : "") + this.getDate() + " " +
+                    (this.getHours().toString().length < 2 ? "0" : "") + this.getHours() + ":" +
+                    (this.getMinutes().toString().length < 2 ? "0" : "") + this.getMinutes() + ":" +
+                    (this.getSeconds().toString().length < 2 ? "0" : "") + this.getSeconds();
+                return d;
+            };
+        }
         let temp = JSON.stringify(data);
         response.send(temp);
     }
@@ -275,10 +284,9 @@ class TableApi extends BaseApi {
             table.logToConsole = this.configuration.common.logToConsole;
             table.fresh(callback);
         });
-        // Deletes some records
-        this.app.delete('/table', upload.array(), (request, response) => {
+        // Gets an empty record
+        this.app.post('/table/fields', upload.array(), (request, response) => {
             let token = request.body.token;
-            let where = request.body.where;
             let queryAttributes = new databaseObject_2.QueryAttribute();
             queryAttributes.from = request.body.tableName;
             queryAttributes.select = "*";
@@ -293,14 +301,44 @@ class TableApi extends BaseApi {
             if (this.requiresToken && !this.checkToken(token)) {
                 this.respond(response, 403, 'Token is absent or invalid');
             }
-            if (!where) {
-                this.respond(response, 400, "Please define a where to set all records to delete");
-                return;
-            }
             let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
             table.logToConsole = this.configuration.common.logToConsole;
-            table.deleteFromWhere(callback, where);
+            table.fields(callback);
         });
+        // Deletes some records
+        this.app.delete('/table', upload.array(), (request, response) => {
+            let body = request.body;
+            this.deleteRecord(body, response);
+        });
+        this.app.post('/table/delete', upload.array(), (request, response) => {
+            let body = request.body;
+            this.deleteRecord(body, response);
+        });
+    }
+    deleteRecord(body, response) {
+        let token = body.token;
+        let where = body.where;
+        let queryAttributes = new databaseObject_2.QueryAttribute();
+        queryAttributes.from = body.tableName;
+        queryAttributes.select = "*";
+        let callback = (err, data) => {
+            if (err) {
+                this.respond(response, 500, err);
+            }
+            else {
+                this.respond(response, 200, data);
+            }
+        };
+        if (this.requiresToken && !this.checkToken(token)) {
+            this.respond(response, 403, 'Token is absent or invalid');
+        }
+        if (!where) {
+            this.respond(response, 400, "Please define a where to set all records to delete");
+            return;
+        }
+        let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
+        table.logToConsole = this.configuration.common.logToConsole;
+        table.deleteFromWhere(callback, where);
     }
 }
 exports.TableApi = TableApi;
