@@ -168,7 +168,7 @@ export class DatabaseRecordset extends DatabaseObject {
 
 /** Class to get a table, allows crud functions */
 export class DatabaseTable extends DatabaseRecordset {
-
+    
     private callbackSearch(err: any, rows: any, formula: string, operator: string, q: string, callback: Function) {
         if (!err) {
             let searchString = "";
@@ -184,6 +184,16 @@ export class DatabaseTable extends DatabaseRecordset {
                 callback(err, null);
             }
         }
+    }
+
+    /**
+     * Load data from the id
+     * @param {Function} - Callback function
+     * @param {string} - Id to search for
+     * @return {void}
+     */
+    load(callback: Function): void {
+        this.query((err: any, rows: any) => callback(err, rows), this.getSql());
     }
 
     /**

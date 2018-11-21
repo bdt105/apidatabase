@@ -89,6 +89,13 @@ export declare class DatabaseTable extends DatabaseRecordset {
      * @param {string} - Id to search for
      * @return {void}
      */
+    load(callback: Function): void;
+    /**
+     * Load data from the id
+     * @param {Function} - Callback function
+     * @param {string} - Id to search for
+     * @return {void}
+     */
     loadFromId(callback: Function, id: string): void;
     /**
      * Load data from a where condition

@@ -161,6 +161,15 @@ class DatabaseTable extends DatabaseRecordset {
      * @param {string} - Id to search for
      * @return {void}
      */
+    load(callback) {
+        this.query((err, rows) => callback(err, rows), this.getSql());
+    }
+    /**
+     * Load data from the id
+     * @param {Function} - Callback function
+     * @param {string} - Id to search for
+     * @return {void}
+     */
     loadFromId(callback, id) {
         this.attributes.where = this.attributes.idFieldName + "='" + id + "'";
         this.query((err, rows) => callback(err, rows), this.getSql());
