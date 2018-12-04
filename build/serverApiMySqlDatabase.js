@@ -36,4 +36,4 @@ new index_1.TableApi(app, conn, configuration, true).assign();
 new index_1.RecordsetApi(app, conn, configuration, true).assignObject();
 app.listen(port);
 toolbox.log("Listening on port " + port);
-//# sourceMappingURL=serverApiDatabase.js.map
+//# sourceMappingURL=serverApiMySqlDatabase.js.map

@@ -14,7 +14,7 @@
             "type": "node",
             "request": "launch",
             "name": "Lancer le programme",
-            "program": "${workspaceRoot}/build/serverApiDatabase.js",
+            "program": "${workspaceRoot}/build/serverApiMySqlDatabase.js",
             "cwd": "${workspaceRoot}/build/",
             "sourceMaps": true,
             "outFiles": [
