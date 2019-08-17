@@ -1,11 +1,11 @@
 {
     "mySql": 
     {
-        "host": "localhost",
+        "host": "127.0.0.1",
         "user": "root",
         "port": "3306",
-        "password": "Root772-",
-        "database": "listing",
+        "password": "Deregnau772-",
+        "database": "mercalys",
         "fileDirectory": "/var/lib/mysql-files/" 
     },
     "common":

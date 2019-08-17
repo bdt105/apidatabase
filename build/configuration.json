@@ -4,7 +4,7 @@
         "host": "localhost",
         "user": "root",
         "port": "3306",
-        "password": "Root772-",
+        "password": "Deregnau772-",
         "database": "listing",
         "fileDirectory": "/var/lib/mysql-files/" 
     },

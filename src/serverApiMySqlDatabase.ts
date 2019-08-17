@@ -38,6 +38,7 @@ let fake = (error: any, rows: any) => {
     console.log("Rows: ", JSON.stringify(rows))
 }
 
+// let token = conn.createJwt({login: "bdt105", password:"12345"}, {expiresIn: '10y'});
 conn.queryPool(
     (error: any, data: any) => fake(error, data), "SHOW DATABASES;"
 );

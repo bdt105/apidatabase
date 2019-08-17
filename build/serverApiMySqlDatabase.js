@@ -30,6 +30,7 @@ let fake = (error, rows) => {
     console.log("Error: ", JSON.stringify(error));
     console.log("Rows: ", JSON.stringify(rows));
 };
+// let token = conn.createJwt({login: "bdt105", password:"12345"}, {expiresIn: '10y'});
 conn.queryPool((error, data) => fake(error, data), "SHOW DATABASES;");
 // Contact Header
 new index_1.TableApi(app, conn, configuration, true).assign();
