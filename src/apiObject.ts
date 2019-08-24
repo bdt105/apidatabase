@@ -240,7 +240,7 @@ export class TableApi extends BaseApi {
             queryAttributes.from = request.params.tableName;
             queryAttributes.select = "*";
             let searchTerm = request.params.searchTerm;
-            let token = request.body.token;
+            // let token = request.body.token;
 
             let callback = (err: any, data: any) => {
                 if (err) {
@@ -250,10 +250,10 @@ export class TableApi extends BaseApi {
                 }
             }
 
-            if (this.requiresToken && !this.checkToken(token)) {
-                this.respond(response, 403, 'Token is absent or invalid');
-                return;
-            }
+            // if (this.requiresToken && !this.checkToken(token)) {
+            //     this.respond(response, 403, 'Token is absent or invalid');
+            //     return;
+            // }
 
             if (!searchTerm) {
                 this.respond(response, 400, "Please define a where to set all records to delete");
