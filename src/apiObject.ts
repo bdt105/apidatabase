@@ -235,6 +235,43 @@ export class TableApi extends BaseApi {
         let upload = multer();
 
         // Lists all records of the table
+        this.app.get('/tablesearch/:tableName/:searchTerm', upload.array(), (request: any, response: any) => {
+            let queryAttributes = new QueryAttribute();
+            queryAttributes.from = request.params.tableName;
+            queryAttributes.select = "*";
+            let searchTerm = request.params.searchTerm;
+            let token = request.body.token;
+
+            let callback = (err: any, data: any) => {
+                if (err) {
+                    this.respond(response, 500, err);
+                } else {
+                    this.respond(response, 200, data);
+                }
+            }
+
+            if (this.requiresToken && !this.checkToken(token)) {
+                this.respond(response, 403, 'Token is absent or invalid');
+                return;
+            }
+
+            if (!searchTerm) {
+                this.respond(response, 400, "Please define a where to set all records to delete");
+                return;
+            }
+
+            let table = new DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
+
+            if (searchTerm) {
+                table.search(callback, searchTerm, "= '##'", "OR");
+            } else {
+                table.load(callback);
+            }
+
+        });
+
+        // Lists all records of the table
         this.app.post('/table', upload.array(), (request: any, response: any) => {
             let queryAttributes = new QueryAttribute();
             queryAttributes.from = request.body.tableName;
@@ -299,6 +336,7 @@ export class TableApi extends BaseApi {
 
             if (this.requiresToken && !this.checkToken(token)) {
                 this.respond(response, 403, 'Token is absent or invalid');
+                return;
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
@@ -324,6 +362,7 @@ export class TableApi extends BaseApi {
 
             if (this.requiresToken && !this.checkToken(token)) {
                 this.respond(response, 403, 'Token is absent or invalid');
+                return;
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
@@ -349,6 +388,7 @@ export class TableApi extends BaseApi {
 
             if (this.requiresToken && !this.checkToken(token)) {
                 this.respond(response, 403, 'Token is absent or invalid');
+                return;
             }
 
             let table = new DatabaseTable(this.connexion, queryAttributes);
@@ -369,7 +409,7 @@ export class TableApi extends BaseApi {
         });
     }
 
-    deleteRecord(body: any, response: any){
+    deleteRecord(body: any, response: any) {
         let token = body.token;
         let where = body.where;
         let queryAttributes = new QueryAttribute();
@@ -386,6 +426,7 @@ export class TableApi extends BaseApi {
 
         if (this.requiresToken && !this.checkToken(token)) {
             this.respond(response, 403, 'Token is absent or invalid');
+            return;
         }
 
         if (!where) {
@@ -396,6 +437,6 @@ export class TableApi extends BaseApi {
         let table = new DatabaseTable(this.connexion, queryAttributes);
         table.logToConsole = this.configuration.common.logToConsole;
 
-        table.deleteFromWhere(callback, where);            
+        table.deleteFromWhere(callback, where);
     }
 }    

@@ -44,8 +44,8 @@ conn.queryPool(
 );
 
 // Contact Header
-new TableApi(app, conn, configuration, true).assign();
-new RecordsetApi(app, conn, configuration, true).assignObject();
+new TableApi(app, conn, configuration, configuration.authentification.active).assign();
+new RecordsetApi(app, conn, configuration, configuration.authentification.active).assignObject();
 
 app.listen(port);
 toolbox.log("Listening on port " + port);

@@ -33,8 +33,8 @@ let fake = (error, rows) => {
 // let token = conn.createJwt({login: "bdt105", password:"12345"}, {expiresIn: '10y'});
 conn.queryPool((error, data) => fake(error, data), "SHOW DATABASES;");
 // Contact Header
-new index_1.TableApi(app, conn, configuration, true).assign();
-new index_1.RecordsetApi(app, conn, configuration, true).assignObject();
+new index_1.TableApi(app, conn, configuration, configuration.authentification.active).assign();
+new index_1.RecordsetApi(app, conn, configuration, configuration.authentification.active).assignObject();
 app.listen(port);
 toolbox.log("Listening on port " + port);
 //# sourceMappingURL=serverApiMySqlDatabase.js.map

@@ -201,6 +201,38 @@ class TableApi extends BaseApi {
         let multer = require('multer');
         let upload = multer();
         // Lists all records of the table
+        this.app.get('/tablesearch/:tableName/:searchTerm', upload.array(), (request, response) => {
+            let queryAttributes = new databaseObject_2.QueryAttribute();
+            queryAttributes.from = request.params.tableName;
+            queryAttributes.select = "*";
+            let searchTerm = request.params.searchTerm;
+            let token = request.body.token;
+            let callback = (err, data) => {
+                if (err) {
+                    this.respond(response, 500, err);
+                }
+                else {
+                    this.respond(response, 200, data);
+                }
+            };
+            if (this.requiresToken && !this.checkToken(token)) {
+                this.respond(response, 403, 'Token is absent or invalid');
+                return;
+            }
+            if (!searchTerm) {
+                this.respond(response, 400, "Please define a where to set all records to delete");
+                return;
+            }
+            let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
+            if (searchTerm) {
+                table.search(callback, searchTerm, "= '##'", "OR");
+            }
+            else {
+                table.load(callback);
+            }
+        });
+        // Lists all records of the table
         this.app.post('/table', upload.array(), (request, response) => {
             let queryAttributes = new databaseObject_2.QueryAttribute();
             queryAttributes.from = request.body.tableName;
@@ -258,6 +290,7 @@ class TableApi extends BaseApi {
             }
             if (this.requiresToken && !this.checkToken(token)) {
                 this.respond(response, 403, 'Token is absent or invalid');
+                return;
             }
             let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
             table.logToConsole = this.configuration.common.logToConsole;
@@ -279,6 +312,7 @@ class TableApi extends BaseApi {
             };
             if (this.requiresToken && !this.checkToken(token)) {
                 this.respond(response, 403, 'Token is absent or invalid');
+                return;
             }
             let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
             table.logToConsole = this.configuration.common.logToConsole;
@@ -300,6 +334,7 @@ class TableApi extends BaseApi {
             };
             if (this.requiresToken && !this.checkToken(token)) {
                 this.respond(response, 403, 'Token is absent or invalid');
+                return;
             }
             let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
             table.logToConsole = this.configuration.common.logToConsole;
@@ -331,6 +366,7 @@ class TableApi extends BaseApi {
         };
         if (this.requiresToken && !this.checkToken(token)) {
             this.respond(response, 403, 'Token is absent or invalid');
+            return;
         }
         if (!where) {
             this.respond(response, 400, "Please define a where to set all records to delete");

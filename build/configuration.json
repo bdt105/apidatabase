@@ -5,7 +5,7 @@
         "user": "root",
         "port": "3306",
         "password": "Deregnau772-",
-        "database": "listing",
+        "database": "mercalys",
         "fileDirectory": "/var/lib/mysql-files/" 
     },
     "common":
@@ -21,7 +21,7 @@
     },
     "authentification": 
     {
-        "active": true,
+        "active": false,
         "secret": "122344",
         "salt": "$2a$10$Vn/zPCM8sSSaYnRmggV4CO",
         "userRequestEmail": "bdt105@gmail.com",
