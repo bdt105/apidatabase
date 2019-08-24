@@ -200,12 +200,12 @@ class TableApi extends BaseApi {
         });
         let multer = require('multer');
         let upload = multer();
-        // Lists all records of the table
-        this.app.get('/tablesearch/:tableName/:searchTerm', upload.array(), (request, response) => {
+        // Search in table
+        this.app.get('/tablesearch/:tableName/:field/:searchTerm', upload.array(), (request, response) => {
             let queryAttributes = new databaseObject_2.QueryAttribute();
             queryAttributes.from = request.params.tableName;
             queryAttributes.select = "*";
-            let searchTerm = request.params.searchTerm;
+            queryAttributes.where = "`" + request.params.field + "`='" + request.params.searchTerm + "'";
             // let token = request.body.token;
             let callback = (err, data) => {
                 if (err) {
@@ -219,18 +219,17 @@ class TableApi extends BaseApi {
             //     this.respond(response, 403, 'Token is absent or invalid');
             //     return;
             // }
-            if (!searchTerm) {
+            if (!request.params.searchTerm) {
+                this.respond(response, 400, "Please define a where to set all records to delete");
+                return;
+            }
+            if (!request.params.field) {
                 this.respond(response, 400, "Please define a where to set all records to delete");
                 return;
             }
             let table = new databaseObject_2.DatabaseTable(this.connexion, queryAttributes);
             table.logToConsole = this.configuration.common.logToConsole;
-            if (searchTerm) {
-                table.search(callback, searchTerm, "= '##'", "OR");
-            }
-            else {
-                table.load(callback);
-            }
+            table.load(callback);
         });
         // Lists all records of the table
         this.app.post('/table', upload.array(), (request, response) => {
