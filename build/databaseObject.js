@@ -205,7 +205,7 @@ class DatabaseTable extends DatabaseRecordset {
         let fields = "";
         for (var name in body) {
             fields += (values == "" ? "" : ", ") + name;
-            values += (values == "" ? "" : ", ") + (body[name] === null ? "null" : "'" + body[name] + "'");
+            values += (values == "" ? "" : ", ") + (body[name] === null ? "null" : "'" + this.toolbox.addSlashes(body[name]) + "'");
         }
         return "(" + fields + ") " + " VALUES (" + values + ")";
     }
@@ -252,9 +252,8 @@ class DatabaseTable extends DatabaseRecordset {
     }
     updateString(body) {
         let st = "";
-        let update = false;
         for (var name in body) {
-            st += (st == "" ? "" : ", ") + (body[name] === null ? name + "=null" : name + "='" + body[name] + "'");
+            st += (st == "" ? "" : ", ") + (body[name] === null ? name + "=null" : name + "='" + this.toolbox.addSlashes(body[name]) + "'");
         }
         return st;
     }

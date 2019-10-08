@@ -168,7 +168,7 @@ export class DatabaseRecordset extends DatabaseObject {
 
 /** Class to get a table, allows crud functions */
 export class DatabaseTable extends DatabaseRecordset {
-    
+
     private callbackSearch(err: any, rows: any, formula: string, operator: string, q: string, callback: Function) {
         if (!err) {
             let searchString = "";
@@ -239,7 +239,7 @@ export class DatabaseTable extends DatabaseRecordset {
         let fields = "";
         for (var name in body) {
             fields += (values == "" ? "" : ", ") + name;
-            values += (values == "" ? "" : ", ") + (body[name] === null ? "null" : "'" + body[name] + "'");
+            values += (values == "" ? "" : ", ") + (body[name] === null ? "null" : "'" + this.toolbox.addSlashes(body[name]) + "'");
         }
 
         return "(" + fields + ") " + " VALUES (" + values + ")";
@@ -292,11 +292,11 @@ export class DatabaseTable extends DatabaseRecordset {
 
     private updateString(body: any) {
         let st = "";
-        let update = false;
 
         for (var name in body) {
-            st += (st == "" ? "" : ", ") + (body[name] === null ? name + "=null" : name + "='" + body[name] + "'");
+            st += (st == "" ? "" : ", ") + (body[name] === null ? name + "=null" : name + "='" + this.toolbox.addSlashes(body[name]) + "'");
         }
+
 
         return st;
     }
