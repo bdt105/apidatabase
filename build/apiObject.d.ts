@@ -13,12 +13,6 @@ export declare class BaseApi {
         "message": string;
     };
     protected respond(response: any, statusCode: number, data?: any): void;
-    private verifyGoogleWebToken(callback, token);
-    private verifyGoogleAndroidToken(callback, token);
-    private verifyGoogleIOsToken(callback, token);
-    protected checkToken(token: string): boolean;
-    protected checkTokenGoogle(callback: Function, token: string): void;
-    private verifyGoogleToken(callback, clientId, token);
 }
 export declare class RecordsetApi extends BaseApi {
     assignObject(): void;

@@ -53,69 +53,6 @@ export class BaseApi {
         response.send(temp);
     }
 
-    private verifyGoogleWebToken(callback: Function, token: string) {
-        this.verifyGoogleToken(callback, this.configuration.authentification.googleWebClientId, token);
-    }
-
-    private verifyGoogleAndroidToken(callback: Function, token: string) {
-        return this.verifyGoogleToken(callback, this.configuration.authentification.googleAndroidClientId, token);
-    }
-
-    private verifyGoogleIOsToken(callback: Function, token: string) {
-        return this.verifyGoogleToken(callback, this.configuration.authentification.googleIOsClientId, token);
-    }
-
-    protected checkToken(token: string) {
-        let authent = this.connexion.checkJwt(token);
-        if (authent.decoded) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    protected checkTokenGoogle(callback: Function, token: string) {
-        let authent = this.connexion.checkJwt(token);
-        if (!authent.decoded) {
-            this.verifyGoogleWebToken(
-                (data: any) => {
-                    if (data && data.status == "OK") {
-                        callback(data)
-                    } else {
-                        this.verifyGoogleAndroidToken((data: any) => {
-                            if (data && data.status == "OK") {
-                                callback(data)
-                            } else {
-                                this.verifyGoogleIOsToken((data: any) => {
-                                    if (data && data.status == "OK") {
-                                        callback(data)
-                                    } else {
-                                        callback({ "status": "ERR", "payload": null });
-                                    }
-                                }, token);
-
-                            }
-                        }, token);
-                    }
-                }, token);
-        } else {
-            callback({ "status": "OK", "payload": authent });
-        }
-    }
-
-    private verifyGoogleToken(callback: Function, clientId: string, token: string) {
-        let { OAuth2Client } = require('google-auth-library');
-        let client = new OAuth2Client(clientId);
-        client.verifyIdToken({
-            idToken: token,
-            audience: clientId
-        }).then((value: any) => {
-            let payload = value.getPayload();
-            callback({ "status": "OK", "payload": payload });
-        }).catch((reason: any) => {
-            callback({ "status": "ERR", "payload": reason });
-        });
-    }
 }
 
 export class RecordsetApi extends BaseApi {
@@ -155,18 +92,29 @@ export class RecordsetApi extends BaseApi {
                 }
             }
 
-            if (this.requiresToken && !this.checkToken(token)) {
-                this.respond(response, 403, 'Token is absent or invalid');
+            let execute = () => {
+                let recordset = new DatabaseRecordset(this.connexion, queryAttributes);
+                recordset.logToConsole = this.configuration.common.logToConsole;
+
+                if (sql) {
+                    recordset.sql(callback, sql);
+                } else {
+                    recordset.load(callback);
+                }
             }
 
-            let recordset = new DatabaseRecordset(this.connexion, queryAttributes);
-            recordset.logToConsole = this.configuration.common.logToConsole;
-
-            if (sql) {
-                recordset.sql(callback, sql);
+            if (this.requiresToken) {
+                this.connexion.checkToken((data: any, error: any) => {
+                    if (error) {
+                        this.respond(response, 403, 'Token is absent or invalid');
+                    } else {
+                        execute();
+                    }
+                }, token);
             } else {
-                recordset.load(callback);
+                execute();
             }
+
         });
 
         // export records of the query
@@ -199,22 +147,32 @@ export class RecordsetApi extends BaseApi {
                 }
             }
 
-            if (this.requiresToken && !this.checkToken(token)) {
-                this.respond(response, 403, 'Token is absent or invalid');
+            let execute = () => {
+                let recordset = new DatabaseRecordset(this.connexion, queryAttributes);
+                recordset.logToConsole = this.configuration.common.logToConsole;
+
+                let realSql = sql;
+                if (!realSql) {
+                    realSql = recordset.getSql();
+                }
+
+                realSql += " " +
+                    ` AS R INTO OUTFILE '` + this.configuration.mySql.fileDirectory + fileName + `' CHARACTER SET utf8 FIELDS TERMINATED BY '` + fieldTerminatedBy + `' ENCLOSED BY '` + fieldEnclosedBy + `' LINES TERMINATED BY '` + lineTerminatedBy + `'`;
+
+                recordset.sql(callback, realSql);
             }
 
-            let recordset = new DatabaseRecordset(this.connexion, queryAttributes);
-            recordset.logToConsole = this.configuration.common.logToConsole;
-
-            let realSql = sql;
-            if (!realSql) {
-                realSql = recordset.getSql();
+            if (this.requiresToken) {
+                this.connexion.checkToken((data: any, error: any) => {
+                    if (error) {
+                        this.respond(response, 403, 'Token is absent or invalid');
+                    } else {
+                        execute();
+                    }
+                }, token);
+            } else {
+                execute();
             }
-
-            realSql += " " +
-                ` AS R INTO OUTFILE '` + this.configuration.mySql.fileDirectory + fileName + `' CHARACTER SET utf8 FIELDS TERMINATED BY '` + fieldTerminatedBy + `' ENCLOSED BY '` + fieldEnclosedBy + `' LINES TERMINATED BY '` + lineTerminatedBy + `'`;
-
-            recordset.sql(callback, realSql);
         });
     }
 }
@@ -292,19 +250,28 @@ export class TableApi extends BaseApi {
                 }
             }
 
-            if (this.requiresToken && !this.checkToken(token)) {
-                this.respond(response, 403, 'Token is absent or invalid');
+            let execute = () => {
+                let table = new DatabaseTable(this.connexion, queryAttributes);
+                table.logToConsole = this.configuration.common.logToConsole;
+
+                if (request.body.searchTerm) {
+                    table.search(callback, searchTerm, " like '%##%'", "OR");
+                } else {
+                    table.load(callback);
+                }
             }
 
-            let table = new DatabaseTable(this.connexion, queryAttributes);
-            table.logToConsole = this.configuration.common.logToConsole;
-
-            if (request.body.searchTerm) {
-                table.search(callback, searchTerm, " like '%##%'", "OR");
+            if (this.requiresToken) {
+                this.connexion.checkToken((data: any, error: any) => {
+                    if (error) {
+                        this.respond(response, 403, 'Token is absent or invalid');
+                    } else {
+                        execute();
+                    }
+                }, token);
             } else {
-                table.load(callback);
+                execute();
             }
-
         });
 
         // Saves an objects
@@ -335,15 +302,26 @@ export class TableApi extends BaseApi {
                 return;
             }
 
-            if (this.requiresToken && !this.checkToken(token)) {
-                this.respond(response, 403, 'Token is absent or invalid');
-                return;
+            let execute = () => {
+
+                let table = new DatabaseTable(this.connexion, queryAttributes);
+                table.logToConsole = this.configuration.common.logToConsole;
+
+                table.save(callback, object);
             }
 
-            let table = new DatabaseTable(this.connexion, queryAttributes);
-            table.logToConsole = this.configuration.common.logToConsole;
+            if (this.requiresToken) {
+                this.connexion.checkToken((data: any, error: any) => {
+                    if (error) {
+                        this.respond(response, 403, 'Token is absent or invalid');
+                    } else {
+                        execute();
+                    }
+                }, token);
+            } else {
+                execute();
+            }
 
-            table.save(callback, object);
         });
 
         // Gets an empty record
@@ -361,15 +339,24 @@ export class TableApi extends BaseApi {
                 }
             }
 
-            if (this.requiresToken && !this.checkToken(token)) {
-                this.respond(response, 403, 'Token is absent or invalid');
-                return;
+            let execute = () => {
+                let table = new DatabaseTable(this.connexion, queryAttributes);
+                table.logToConsole = this.configuration.common.logToConsole;
+
+                table.fresh(callback);
             }
 
-            let table = new DatabaseTable(this.connexion, queryAttributes);
-            table.logToConsole = this.configuration.common.logToConsole;
-
-            table.fresh(callback);
+            if (this.requiresToken) {
+                this.connexion.checkToken((data: any, error: any) => {
+                    if (error) {
+                        this.respond(response, 403, 'Token is absent or invalid');
+                    } else {
+                        execute();
+                    }
+                }, token);
+            } else {
+                execute();
+            }
         });
 
         // Gets an empty record
@@ -387,15 +374,24 @@ export class TableApi extends BaseApi {
                 }
             }
 
-            if (this.requiresToken && !this.checkToken(token)) {
-                this.respond(response, 403, 'Token is absent or invalid');
-                return;
+            let execute = () => {
+                let table = new DatabaseTable(this.connexion, queryAttributes);
+                table.logToConsole = this.configuration.common.logToConsole;
+
+                table.fields(callback);
+            }
+            if (this.requiresToken) {
+                this.connexion.checkToken((data: any, error: any) => {
+                    if (error) {
+                        this.respond(response, 403, 'Token is absent or invalid');
+                    } else {
+                        execute();
+                    }
+                }, token);
+            } else {
+                execute();
             }
 
-            let table = new DatabaseTable(this.connexion, queryAttributes);
-            table.logToConsole = this.configuration.common.logToConsole;
-
-            table.fields(callback);
         });
 
         // Deletes some records
@@ -425,19 +421,27 @@ export class TableApi extends BaseApi {
             }
         }
 
-        if (this.requiresToken && !this.checkToken(token)) {
-            this.respond(response, 403, 'Token is absent or invalid');
-            return;
-        }
-
         if (!where) {
             this.respond(response, 400, "Please define a where to set all records to delete");
             return;
         }
 
-        let table = new DatabaseTable(this.connexion, queryAttributes);
-        table.logToConsole = this.configuration.common.logToConsole;
+        let execute = () => {
+            let table = new DatabaseTable(this.connexion, queryAttributes);
+            table.logToConsole = this.configuration.common.logToConsole;
+            table.deleteFromWhere(callback, where);
+        }
 
-        table.deleteFromWhere(callback, where);
+        if (this.requiresToken) {
+            this.connexion.checkToken((data: any, error: any) => {
+                if (error) {
+                    this.respond(response, 403, 'Token is absent or invalid');
+                } else {
+                    execute();
+                }
+            }, token);
+        } else {
+            execute();
+        }
     }
 }    
