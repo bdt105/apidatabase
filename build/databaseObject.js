@@ -253,7 +253,7 @@ class DatabaseTable extends DatabaseRecordset {
     updateString(body) {
         let st = "";
         for (var name in body) {
-            st += (st == "" ? "" : ", ") + (body[name] === null ? name + "=null" : name + "='" + this.toolbox.addSlashes(body[name]) + "'");
+            st += (st == "" ? "" : ", ") + (body[name] === null ? "`" + name + "`=null" : "`" + name + "`='" + this.toolbox.addSlashes(body[name]) + "'");
         }
         return st;
     }
