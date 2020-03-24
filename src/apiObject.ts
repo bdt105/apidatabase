@@ -184,7 +184,7 @@ export class TableApi extends BaseApi {
     }
 
     protected assignObject() {
-        this.myToolbox.log("API to table ==> API launched");
+        console.log("API to table ==> API launched");
 
         this.app.get('/table', (request: any, response: any) => {
             this.respond(response, 200, 'API table is running');
