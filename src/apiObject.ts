@@ -227,7 +227,6 @@ export class TableApi extends BaseApi {
             table.logToConsole = this.configuration.common.logToConsole;
 
             table.load(callback);
-
         });
 
         // Lists all records of the table

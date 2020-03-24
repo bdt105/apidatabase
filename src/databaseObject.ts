@@ -238,7 +238,7 @@ export class DatabaseTable extends DatabaseRecordset {
         let values = "";
         let fields = "";
         for (var name in body) {
-            fields += (values == "" ? "" : ", ") + name;
+            fields += (values == "" ? "" : ", ") + "`" + name + "`";
             values += (values == "" ? "" : ", ") + (body[name] === null ? "null" : "'" + this.toolbox.addSlashes(body[name]) + "'");
         }
 
