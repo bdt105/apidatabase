@@ -1,2 +1,0 @@
-Mon, 03 Dec 2018 13:11:10 GMT body-parser deprecated bodyParser: use individual json/urlencoded middlewares at serverApiMySqlDatabase.js:19:9
-Mon, 03 Dec 2018 13:11:10 GMT body-parser deprecated undefined extended: provide extended option at ../node_modules/body-parser/index.js:105:29
