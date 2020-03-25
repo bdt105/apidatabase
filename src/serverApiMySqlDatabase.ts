@@ -62,8 +62,8 @@ app.use(function (req, res, next) {
 
 let conn = new Connexion(configuration.mySql, configuration.authentification);
 let fake = (error: any, rows: any) => {
-    console.log("Error: ", JSON.stringify(error))
-    console.log("Rows: ", JSON.stringify(rows))
+    console.error("Error: " + JSON.stringify(error))
+    console.log("Rows: " + JSON.stringify(rows))
 }
 
 // let token = conn.createJwt({login: "bdt105", password:"12345"}, {expiresIn: '10y'});

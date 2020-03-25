@@ -52,8 +52,8 @@ app.use(function (req, res, next) {
 });
 let conn = new dist_1.Connexion(configuration.mySql, configuration.authentification);
 let fake = (error, rows) => {
-    console.log("Error: ", JSON.stringify(error));
-    console.log("Rows: ", JSON.stringify(rows));
+    console.error("Error: " + JSON.stringify(error));
+    console.log("Rows: " + JSON.stringify(rows));
 };
 // let token = conn.createJwt({login: "bdt105", password:"12345"}, {expiresIn: '10y'});
 conn.queryPool((error, data) => fake(error, data), "SHOW DATABASES;");
