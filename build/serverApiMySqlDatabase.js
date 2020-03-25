@@ -7,7 +7,32 @@ const index_1 = require("./index");
 let app = express();
 // For POST-Support
 let toolbox = new dist_2.Toolbox();
-let configuration = toolbox.loadFromJsonFile("configuration.json");
+let configurationFileName = __dirname + "/configuration.json";
+let configuration = toolbox.loadFromJsonFile(configurationFileName);
+if (configuration && configuration.common) {
+    if (configuration.common.logFile) {
+        var fs = require('fs');
+        var util = require('util');
+        var log_file = fs.createWriteStream(__dirname + '/' + configuration.common.logFile, { flags: 'w' });
+        var log_stdout = process.stdout;
+        console.log = (d) => {
+            var dateTime = new Date().toISOString().substr(0, 19).replace('T', ' ');
+            log_file.write(dateTime + " - " + util.format(d) + '\n');
+            log_stdout.write(dateTime + " - " + util.format(d) + '\n');
+        };
+    }
+    if (configuration.common.errorFile) {
+        var fs = require('fs');
+        var util = require('util');
+        var error_file = fs.createWriteStream(__dirname + '/' + configuration.common.errorFile, { flags: 'w' });
+        var log_stdout = process.stdout;
+        console.error = (d) => {
+            var dateTime = new Date().toISOString().substr(0, 19).replace('T', ' ');
+            error_file.write(dateTime + " - " + util.format(d) + '\n');
+            log_stdout.write(dateTime + " - " + util.format(d) + '\n');
+        };
+    }
+}
 let bodyParser = require('body-parser');
 let port = configuration.common.port;
 process.on('uncaughtException', function (err) {
@@ -36,5 +61,5 @@ conn.queryPool((error, data) => fake(error, data), "SHOW DATABASES;");
 new index_1.TableApi(app, conn, configuration, configuration.authentification.active).assign();
 new index_1.RecordsetApi(app, conn, configuration, configuration.authentification.active).assignObject();
 app.listen(port);
-toolbox.log("Listening on port " + port);
+console.log("Listening on port " + port);
 //# sourceMappingURL=serverApiMySqlDatabase.js.map
